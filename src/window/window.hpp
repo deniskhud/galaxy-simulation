@@ -13,10 +13,17 @@ private:
 
     bool SDLCALL Window::framebufferResizeCallback(void* userdata, SDL_Event* event);
 public:
-    /*
+    /**
+     * Creates Vulkan surface for the SDL window.
      *
+     * Uses SDL_Vulkan_CreateSurface to connect Vulkan with the current window.
+     * The surface is wrapped in RAII for automatic cleanup.
+     *
+     * @param instance Vulkan instance
+     * @return Vulkan surface handle
      */
     vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance);
+    std::vector<const char*> getRequiredInstanceExtensions();
 
     Window();
     ~Window();

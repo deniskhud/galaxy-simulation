@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(galactic)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -28,6 +29,8 @@ pkg_check_modules(SDL3 REQUIRED sdl3)
 add_executable(galactic main.cpp
         src/window/window.hpp
         src/window/window.cpp
+        src/core/context.hpp
+        src/core/context.cpp
 
         #[[stb_image.cpp]])
 

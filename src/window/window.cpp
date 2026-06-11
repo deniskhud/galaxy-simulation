@@ -50,3 +50,14 @@ vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance){
     }
     return vk::raii::SurfaceKHR(instance, surface);
 }
+
+std::vector<const char*> Window::getRequiredInstanceExtensions() {
+    std::uint32_t sdlExtensionsCount = 0;
+    auto sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionsCount);
+
+    std::vector extensions(sdlExtensions, sdlExtensions + sdlExtensionsCount);
+    /*if (enableValidationLayers) {
+        extensions.push_back(vk::EXTDebugUtilsExtensionName);
+    }*/
+    return extensions;
+}
