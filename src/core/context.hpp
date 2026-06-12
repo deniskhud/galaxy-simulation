@@ -48,13 +48,15 @@ private:
      */
     bool isDeviceSupportQueues(const std::vector<vk::QueueFamilyProperties>& deviceQueues);
     bool isDeviceSupportExtensions(const std::vector<vk::ExtensionProperties>& deviceExtensions);
+
+    std::uint32_t findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface);
 public:
     VulkanContext();
     ~VulkanContext();
 
     void createInstance(const std::vector<const char*>& requiredInstanceExtensions);
     void pickPhysicalDevice();
-    void createLogicalDevice();
+    void createLogicalDevice(const vk::raii::SurfaceKHR& surface);
     void setupDebugMessenger();
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
                                                           const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);

@@ -124,6 +124,46 @@ bool VulkanContext::isDeviceSupportExtensions(const std::vector<vk::ExtensionPro
     });
 }
 
-void VulkanContext::createLogicalDevice() {
+std::uint32_t VulkanContext::findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface) {
+    auto queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+    for (uint32_t i = 0; i < queueFamilyProperties.size(); i++) {
+        if (queueFamilyProperties[i].queueFlags & requiredFlag
+                && physicalDevice.getSurfaceSupportKHR(i, *surface)) {
+            return i;
+        }
+    }
+}
 
+void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
+    queueIndex = findQueueFamilyIndex(vk::QueueFlagBits::eGraphics, surface);
+
+    vk::StructureChain<vk::PhysicalDeviceFeatures2,
+                           vk::PhysicalDeviceVulkan11Features,
+                           vk::PhysicalDeviceVulkan13Features,
+                           vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+            featureChain = {
+        {.features = {.samplerAnisotropy = true}},                                                          // vk::PhysicalDeviceFeatures2
+        {.shaderDrawParameters = true},                              // vk::PhysicalDeviceVulkan11Features
+        {.synchronization2 = true, .dynamicRendering = true},        // vk::PhysicalDeviceVulkan13Features
+        {.extendedDynamicState = true},                         // vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
+    };
+
+    float queuePriority = 0.5f;
+
+    vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
+        .queueFamilyIndex = queueIndex,
+        .queueCount = 1,
+        .pQueuePriorities = &queuePriority
+    };
+
+    vk::DeviceCreateInfo deviceCreateInfo{
+        .pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos       = &deviceQueueCreateInfo,
+        .enabledExtensionCount   = static_cast<uint32_t>(requiredDeviceExtensions.size()),
+        .ppEnabledExtensionNames = requiredDeviceExtensions.data()
+    };
+
+    device = vk::raii::Device(physicalDevice, deviceCreateInfo);
+    queue  = vk::raii::Queue(device, queueIndex, 0);
 }
