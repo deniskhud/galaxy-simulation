@@ -20,12 +20,7 @@ constexpr bool enableValidationLayers = true;
 
 class VulkanContext final {
 private:
-    vk::raii::Context context;
-    vk::raii::Instance instance;
-    vk::raii::PhysicalDevice physicalDevice;
-    vk::raii::Device device;
-    vk::raii::Queue queue;
-    std::uint32_t queueIndex;
+
 
     vk::DebugUtilsMessengerEXT debugMessenger;
 
@@ -51,6 +46,14 @@ private:
 
     std::uint32_t findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface);
 public:
+
+    vk::raii::Context context;
+    vk::raii::Instance instance;
+    vk::raii::PhysicalDevice physicalDevice;
+    vk::raii::Device device;
+    vk::raii::Queue queue;
+    std::uint32_t queueIndex;
+
     VulkanContext();
     ~VulkanContext();
 

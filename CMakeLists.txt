@@ -31,6 +31,9 @@ add_executable(galactic main.cpp
         src/window/window.cpp
         src/core/context.hpp
         src/core/context.cpp
+        src/core/context.hpp
+        src/core/swapchain.hpp
+        src/core/swapchain.cpp
 
         #[[stb_image.cpp]])
 

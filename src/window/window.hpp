@@ -11,7 +11,7 @@ private:
     int WIDTH, HEIGHT;
     SDL_Window* window = nullptr;
 
-    bool SDLCALL Window::framebufferResizeCallback(void* userdata, SDL_Event* event);
+    bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
 public:
     /**
      * Creates Vulkan surface for the SDL window.
@@ -24,6 +24,15 @@ public:
      */
     vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance);
     std::vector<const char*> getRequiredInstanceExtensions();
+
+    /*
+     * @return {width, height}
+     */
+    std::pair<int, int> getFrameBufferSize() const {
+        int w = 0, h = 0;
+        SDL_GetWindowSizeInPixels(window, &w, &h);
+        return {w, h};
+    }
 
     Window();
     ~Window();

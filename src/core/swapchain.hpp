@@ -2,7 +2,8 @@
 #define SWAPCHAIN_HPP
 #include "context.hpp"
 #include "../window/window.hpp"
-class Swapchain {
+
+class SwapChain {
 public:
 
 
@@ -11,13 +12,22 @@ private:
     const VulkanContext& context;
     const Window& window;
 
-    vk::raii::SwapchainKHR swapchain;
-    std::vector<vk::Image> images;
+    vk::raii::SwapchainKHR swapChain;
+    std::vector<vk::Image> swapChainImages;
     std::vector<vk::ImageView> imageViews;
-    vk::SurfaceFormatKHR surfaceFormat;
-    vk::Extent2D extent;
+    vk::SurfaceFormatKHR swapChainSurfaceFormat;
+    vk::Extent2D swapChainExtent;
 
+    void createSwapChain(const vk::raii::SurfaceKHR& surface);
+    void recreateSwapChain();
+    void cleanupSwapChain();
+
+    vk::SurfaceFormatKHR chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const &availableFormats);
+    vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const &availablePresentModes);
+    vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities);
+    uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities);
+
+    void createImageViews();
 };
-
 
 #endif //SWAPCHAIN_HPP
