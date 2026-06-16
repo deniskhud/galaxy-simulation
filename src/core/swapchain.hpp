@@ -5,14 +5,19 @@
 
 class SwapChain {
 public:
+    SwapChain(const VulkanContext& context, const Window& window)
+    : context(context),window(window)
+    {  }
 
-
+    vk::Format getSwapChainImageFormat() const {
+        return swapChainSurfaceFormat.format;
+    }
 
 private:
     const VulkanContext& context;
     const Window& window;
 
-    vk::raii::SwapchainKHR swapChain;
+    vk::raii::SwapchainKHR swapChain = nullptr;
     std::vector<vk::Image> swapChainImages;
     std::vector<vk::ImageView> imageViews;
     vk::SurfaceFormatKHR swapChainSurfaceFormat;
