@@ -26,5 +26,7 @@ private:
 
     std::vector<char> readShaderFile(const std::string& filename) const;
     vk::raii::ShaderModule createShaderModule(const std::vector<char> &code);
+
+    bool createDescriptorSetLayout();
 };
 #endif //GALACTIC_PIPELINE_HPP

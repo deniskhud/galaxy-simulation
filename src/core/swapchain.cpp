@@ -26,14 +26,14 @@ vk::Extent2D SwapChain::chooseSwapExtent(vk::SurfaceCapabilitiesKHR const &surfa
 }
 
 void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
-    vk::SurfaceCapabilitiesKHR surfaceCapabilities = context.physicalDevice.getSurfaceCapabilitiesKHR( *surface );
+    vk::SurfaceCapabilitiesKHR surfaceCapabilities = context.getPhysicalDevice().getSurfaceCapabilitiesKHR( *surface );
     swapChainExtent = chooseSwapExtent(surfaceCapabilities);
     uint32_t minImageCount = chooseSwapMinImageCount(surfaceCapabilities);
 
-    std::vector<vk::SurfaceFormatKHR> availableFormats = context.physicalDevice.getSurfaceFormatsKHR(*surface);
+    std::vector<vk::SurfaceFormatKHR> availableFormats = context.getPhysicalDevice().getSurfaceFormatsKHR(*surface);
     swapChainSurfaceFormat = chooseSwapSurfaceFormat(availableFormats);
 
-    std::vector<vk::PresentModeKHR> availablePresentModes = context.physicalDevice.getSurfacePresentModesKHR(*surface);
+    std::vector<vk::PresentModeKHR> availablePresentModes = context.getPhysicalDevice().getSurfacePresentModesKHR(*surface);
     vk::PresentModeKHR presentMode = chooseSwapPresentMode(availablePresentModes);
 
     vk::SwapchainCreateInfoKHR swapChainCreateInfo = {
@@ -50,7 +50,7 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
         .clipped = true,
         .oldSwapchain = nullptr
     };
-    swapChain = vk::raii::SwapchainKHR(context.device, swapChainCreateInfo);
+    swapChain = vk::raii::SwapchainKHR(context.getDevice(), swapChainCreateInfo);
     swapChainImages = swapChain.getImages();
 }
 
@@ -78,6 +78,6 @@ void SwapChain::createImageViews() {
 
     for (auto& image : swapChainImages) {
         imageViewCreateInfo.image = image;
-        imageViews.emplace_back(vk::raii::ImageView(context.device, imageViewCreateInfo));
+        imageViews.emplace_back(vk::raii::ImageView(context.getDevice(), imageViewCreateInfo));
     }
 }

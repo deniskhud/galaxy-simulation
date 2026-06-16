@@ -80,7 +80,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 
 void VulkanContext::pickPhysicalDevice() {
     auto physicalDevices = instance.enumeratePhysicalDevices();
-    auto const deviceIt = std::ranges::find_if(physicalDevices, [](auto const& physicalDevice) {
+    auto const deviceIt = std::ranges::find_if(physicalDevices, [this](auto const& physicalDevice) {
         return isDeviceSuitable(physicalDevice);
     });
     if (deviceIt ==  physicalDevices.end()) {
@@ -89,7 +89,7 @@ void VulkanContext::pickPhysicalDevice() {
     physicalDevice = *deviceIt;
 }
 
-bool VulkanContext::isDeviceSuitable(const vk::raii::PhysicalDevice &physicalDevice) {
+bool VulkanContext::isDeviceSuitable(const vk::raii::PhysicalDevice& physicalDevice) {
     bool supportVulkan1_3 = physicalDevice.getProperties().apiVersion >= vk::ApiVersion14;
 
     auto deviceQueueFamilies = physicalDevice.getQueueFamilyProperties();
@@ -166,4 +166,12 @@ void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
 
     device = vk::raii::Device(physicalDevice, deviceCreateInfo);
     queue  = vk::raii::Queue(device, queueIndex, 0);
+}
+
+const vk::raii::Device& VulkanContext::getDevice() const {
+    return device;
+}
+
+const vk::raii::PhysicalDevice& VulkanContext::getPhysicalDevice() const {
+    return physicalDevice;
 }

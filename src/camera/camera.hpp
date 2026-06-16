@@ -1,0 +1,6 @@
+#ifndef GALACTIC_CAMERA_HPP
+#define GALACTIC_CAMERA_HPP
+
+
+
+#endif //GALACTIC_CAMERA_HPP

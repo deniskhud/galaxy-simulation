@@ -114,7 +114,7 @@ bool Pipeline::createPipeline() {
           .pPushConstantRanges = nullptr
         };
 
-        pipelineLayout = vk::raii::PipelineLayout(context.device, pipelineLayoutInfo);
+        pipelineLayout = vk::raii::PipelineLayout(context.getDevice(), pipelineLayoutInfo);
         // Create graphics pipeline
         vk::GraphicsPipelineCreateInfo pipelineInfo{
             .stageCount = 2,
@@ -145,11 +145,58 @@ bool Pipeline::createPipeline() {
 
         pipelineInfo.pNext = &renderingInfo;
 
-        pipeline = vk::raii::Pipeline(context.device, nullptr, pipelineInfo);
+        pipeline = vk::raii::Pipeline(context.getDevice(), nullptr, pipelineInfo);
 
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to create graphics pipeline: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool Pipeline::createDescriptorSetLayout() {
+    try {
+        // Create descriptor set layout bindings
+        std::array<vk::DescriptorSetLayoutBinding, 2> graphicsBindings = {
+            vk::DescriptorSetLayoutBinding{
+                .binding        = 0,
+                .descriptorType = vk::DescriptorType::eUniformBuffer,  // камера (view/proj)
+                .descriptorCount = 1,
+                .stageFlags     = vk::ShaderStageFlagBits::eVertex,
+            },
+            vk::DescriptorSetLayoutBinding{
+                .binding        = 1,
+                .descriptorType = vk::DescriptorType::eStorageBuffer,  // SSBO частиц — только read
+                .descriptorCount = 1,
+                .stageFlags     = vk::ShaderStageFlagBits::eVertex,
+            },
+        };
+
+        std::array<vk::DescriptorSetLayoutBinding, 1> computeBindings = {
+            vk::DescriptorSetLayoutBinding{
+                .binding        = 0,
+                .descriptorType = vk::DescriptorType::eStorageBuffer,  // SSBO частиц — read/write
+                .descriptorCount = 1,
+                .stageFlags     = vk::ShaderStageFlagBits::eCompute,
+            },
+        };
+
+        // Create descriptor set layout
+        vk::DescriptorSetLayoutCreateInfo layoutInfo{
+            .bindingCount = static_cast<uint32_t>(graphicsBindings.size()),
+            .pBindings = graphicsBindings.data()
+          };
+        descriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), layoutInfo);
+
+        vk::DescriptorSetLayoutCreateInfo computeLayoutInfo{
+            .bindingCount = static_cast<uint32_t>(computeBindings.size()),
+            .pBindings = computeBindings.data()
+          };
+        computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), layoutInfo);
+        return true;
+    }
+    catch (std::exception& e) {
+        std::cerr << "Failed to create descriptor set layout: " << e.what() << std::endl;
         return false;
     }
 }
@@ -177,5 +224,5 @@ vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char> &cod
         .codeSize = code.size(),
         .pCode = reinterpret_cast<const uint32_t*>(code.data()),
     };
-    return vk::raii::ShaderModule(context.device, shaderModuleCreateInfo);
+    return vk::raii::ShaderModule(context.getDevice(), shaderModuleCreateInfo);
 }
