@@ -1,6 +1,29 @@
 #ifndef GALACTIC_CAMERA_HPP
 #define GALACTIC_CAMERA_HPP
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
+struct alignas(16) CameraUbo {
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
+class Camera {
+public:
+    explicit Camera(float aspectRatio);
+
+    CameraUbo getUbo() const;
+
+private:
+    glm::vec3 position{0.0f, 3.0f, 8.0f};
+    glm::vec3 target{0.0f, 0.0f, 0.0f};
+    glm::vec3 up{0.0f, 1.0f, 0.0f};
+
+    float fovYDegrees = 45.0f;
+    float aspectRatio;
+    float nearPlane = 0.1f;
+    float farPlane = 100.0f;
+};
 
 #endif //GALACTIC_CAMERA_HPP

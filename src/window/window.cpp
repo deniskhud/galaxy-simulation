@@ -18,7 +18,7 @@ Window::Window() {
         SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
     );
 
-    SDL_AddEventWatch(framebufferResizeCallback, this);
+    //SDL_AddEventWatch(framebufferResizeCallback, this);
 
     if (!window) {
         throw std::runtime_error("Failed to create SDL3 window: " + std::string(SDL_GetError()));
@@ -38,12 +38,13 @@ Window::~Window() {
 bool SDLCALL Window::framebufferResizeCallback(void* userdata, SDL_Event* event)
 {
     auto app = reinterpret_cast<Window*>(userdata);
-    app->framebufferResized = true;
-    return app->framebufferResized;
+    /*app->framebufferResized = true;
+    return app->framebufferResized;*/
+    return true;
 
 }
 
-vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance){
+vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance) const {
     VkSurfaceKHR surface;
     if (!SDL_Vulkan_CreateSurface(window, *instance, nullptr, &surface)) {
         throw std::runtime_error("failed to create window surface!");
@@ -51,13 +52,13 @@ vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance){
     return vk::raii::SurfaceKHR(instance, surface);
 }
 
-std::vector<const char*> Window::getRequiredInstanceExtensions() {
+std::vector<const char*> Window::getRequiredInstanceExtensions() const {
     std::uint32_t sdlExtensionsCount = 0;
     auto sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionsCount);
 
     std::vector extensions(sdlExtensions, sdlExtensions + sdlExtensionsCount);
-    /*if (enableValidationLayers) {
+    if (true) {
         extensions.push_back(vk::EXTDebugUtilsExtensionName);
-    }*/
+    }
     return extensions;
 }

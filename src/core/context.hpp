@@ -1,6 +1,5 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
-#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 #if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
 #include <vulkan/vulkan_raii.hpp>
@@ -17,14 +16,18 @@ constexpr bool enableValidationLayers = false;
 constexpr bool enableValidationLayers = true;
 #endif
 
+#include "../window/window.hpp"
 
 class VulkanContext final {
 private:
     vk::raii::Context context;
-    vk::raii::Instance instance;
-    vk::raii::PhysicalDevice physicalDevice;
-    vk::raii::Device device;
-    vk::raii::Queue queue;
+    vk::raii::Instance instance = nullptr;
+    vk::raii::PhysicalDevice physicalDevice = nullptr;
+    vk::raii::Device device = nullptr;
+    vk::raii::Queue queue = nullptr;
+
+    vk::raii::SurfaceKHR surface = nullptr;
+
     std::uint32_t queueIndex;
 
     vk::DebugUtilsMessengerEXT debugMessenger;
@@ -51,7 +54,7 @@ private:
 
     std::uint32_t findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface);
 public:
-    VulkanContext();
+    VulkanContext(const Window& window);
     ~VulkanContext();
 
     void createInstance(const std::vector<const char*>& requiredInstanceExtensions);
@@ -64,5 +67,10 @@ public:
     /* getters */
     const vk::raii::Device& getDevice() const;
     const vk::raii::PhysicalDevice& getPhysicalDevice() const;
+    const std::uint32_t getGraphicsQueueFamilyIndex() const;
+    const vk::raii::Queue& getGraphicsQueue() const;
+    const vk::raii::Queue& getPresentQueue() const;
+    const vk::raii::Instance& getInstance() const;
+    const vk::raii::SurfaceKHR& getSurface() const;
 };
 #endif //CONTEXT_HPP

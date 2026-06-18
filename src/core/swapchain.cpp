@@ -37,6 +37,7 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
     vk::PresentModeKHR presentMode = chooseSwapPresentMode(availablePresentModes);
 
     vk::SwapchainCreateInfoKHR swapChainCreateInfo = {
+        .surface = *surface,
         .minImageCount = minImageCount,
         .imageFormat = swapChainSurfaceFormat.format,
         .imageColorSpace = swapChainSurfaceFormat.colorSpace,
@@ -52,6 +53,22 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
     };
     swapChain = vk::raii::SwapchainKHR(context.getDevice(), swapChainCreateInfo);
     swapChainImages = swapChain.getImages();
+}
+
+void SwapChain::recreateSwapChain() {
+    auto windowSize = window.getFrameBufferSize();
+    while (windowSize.first == 0 || windowSize.second == 0) {
+        windowSize = window.getFrameBufferSize();
+    }
+    context.getDevice().waitIdle();
+    cleanupSwapChain();
+    createSwapChain(context.getSurface());
+    createImageViews();
+    std::cout << "recreateSwapChain" << std::endl;
+}
+void SwapChain::cleanupSwapChain() {
+    imageViews.clear();
+    swapChain = nullptr;
 }
 
 uint32_t SwapChain::chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities) {

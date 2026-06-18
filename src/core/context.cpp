@@ -1,5 +1,21 @@
 #include "context.hpp"
 
+#include <queue>
+
+VulkanContext::VulkanContext(const Window& window) {
+    createInstance(window.getRequiredInstanceExtensions());
+    setupDebugMessenger();
+
+    surface = window.createSurface(getInstance());
+
+    pickPhysicalDevice();
+    createLogicalDevice(surface);
+}
+
+VulkanContext::~VulkanContext() {
+
+}
+
 void VulkanContext::createInstance(const std::vector<const char*>& requiredInstanceExtensions) {
     constexpr vk::ApplicationInfo appInfo {
         .pApplicationName = "Vulkan Engine",
@@ -70,10 +86,13 @@ void VulkanContext::setupDebugMessenger() {
     debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 }
 
-static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
-                                                          const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanContext::debugCallback(
+    vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+    vk::DebugUtilsMessageTypeFlagsEXT type,
+    const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData)
 {
-    std::cerr << "validation layer: type" << vk::to_string(type) << " msg: " << pCallbackData->pMessage << std::endl;
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
     return vk::False;
 }
 
@@ -132,6 +151,7 @@ std::uint32_t VulkanContext::findQueueFamilyIndex(vk::QueueFlagBits requiredFlag
             return i;
         }
     }
+    throw std::runtime_error("Failed to find queue family");
 }
 
 void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
@@ -168,10 +188,31 @@ void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
     queue  = vk::raii::Queue(device, queueIndex, 0);
 }
 
+/* getters */
 const vk::raii::Device& VulkanContext::getDevice() const {
     return device;
 }
 
 const vk::raii::PhysicalDevice& VulkanContext::getPhysicalDevice() const {
     return physicalDevice;
+}
+
+const std::uint32_t VulkanContext::getGraphicsQueueFamilyIndex() const {
+    return queueIndex;
+}
+
+const vk::raii::Queue& VulkanContext::getGraphicsQueue() const {
+    return queue;
+}
+
+const vk::raii::Queue& VulkanContext::getPresentQueue() const {
+    return queue;
+}
+
+const vk::raii::Instance& VulkanContext::getInstance() const {
+    return instance;
+}
+
+const vk::raii::SurfaceKHR& VulkanContext::getSurface() const {
+    return surface;
 }

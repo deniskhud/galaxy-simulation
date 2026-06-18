@@ -1,8 +1,8 @@
 #include "pipeline.hpp"
 bool Pipeline::createPipeline() {
     try{
-        auto vertShader = readShaderFile("vert.spv");
-        auto fragShader = readShaderFile("frag.spv");
+        auto vertShader = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/vert.spv");
+        auto fragShader = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/frag.spv");
 
         vk::raii::ShaderModule vert = createShaderModule(vertShader);
         vk::raii::ShaderModule frag = createShaderModule(fragShader);
@@ -10,13 +10,13 @@ bool Pipeline::createPipeline() {
         vk::PipelineShaderStageCreateInfo vertexShaderCreateInfo = {
             .stage = vk::ShaderStageFlagBits::eVertex,
             .module = *vert,
-            .pName = "VSMain"
+            .pName = "main"
         };
 
         vk::PipelineShaderStageCreateInfo fragShaderStageInfo{
             .stage = vk::ShaderStageFlagBits::eFragment,
             .module = *frag,
-            .pName = "PSMain"
+            .pName = "main"
           };
             vk::PipelineShaderStageCreateInfo shaderStages[] = {vertexShaderCreateInfo, fragShaderStageInfo};
 
@@ -62,7 +62,7 @@ bool Pipeline::createPipeline() {
 
         // Create depth stencil state info
         vk::PipelineDepthStencilStateCreateInfo depthStencil{
-          .depthTestEnable = VK_TRUE,
+          .depthTestEnable = vk::False,
           .depthWriteEnable = vk::False,
           .depthCompareOp = vk::CompareOp::eLess,
           .depthBoundsTestEnable = VK_FALSE,
@@ -139,7 +139,7 @@ bool Pipeline::createPipeline() {
         vk::PipelineRenderingCreateInfo renderingInfo{
             .colorAttachmentCount = 1,
             .pColorAttachmentFormats = &swapChainFormat,
-            .depthAttachmentFormat = vk::Format::eD32Sfloat,
+            .depthAttachmentFormat = vk::Format::eUndefined,
             .stencilAttachmentFormat = vk::Format::eUndefined
           };
 
@@ -192,7 +192,7 @@ bool Pipeline::createDescriptorSetLayout() {
             .bindingCount = static_cast<uint32_t>(computeBindings.size()),
             .pBindings = computeBindings.data()
           };
-        computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), layoutInfo);
+        computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), computeLayoutInfo);
         return true;
     }
     catch (std::exception& e) {

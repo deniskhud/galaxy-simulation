@@ -8,7 +8,7 @@
 #include <vulkan/vulkan_raii.hpp>
 class Window final {
 private:
-    int WIDTH, HEIGHT;
+    int WIDTH = 1920, HEIGHT = 1080;
     SDL_Window* window = nullptr;
 
     bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
@@ -22,13 +22,13 @@ public:
      * @param instance Vulkan instance
      * @return Vulkan surface handle
      */
-    vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance);
-    std::vector<const char*> getRequiredInstanceExtensions();
+    vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance) const;
+    std::vector<const char*> getRequiredInstanceExtensions() const;
 
     /*
      * @return {width, height}
      */
-    std::pair<int, int> getFrameBufferSize() const {
+    [[nodiscard]] std::pair<int, int> getFrameBufferSize() const {
         int w = 0, h = 0;
         SDL_GetWindowSizeInPixels(window, &w, &h);
         return {w, h};

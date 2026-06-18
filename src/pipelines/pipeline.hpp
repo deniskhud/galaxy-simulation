@@ -6,7 +6,20 @@
 #include <fstream>
 class Pipeline {
 public:
-    Pipeline(const VulkanContext& context, const SwapChain& swapChain) : context(context), swapChain(swapChain) {  }
+    Pipeline(const VulkanContext& context, const SwapChain& swapChain) : context(context), swapChain(swapChain) {
+        createDescriptorSetLayout();
+        createPipeline();
+    }
+    const vk::raii::DescriptorSetLayout& getDescriptorSetLayout() const {
+        return descriptorSetLayout;
+    }
+
+    const vk::raii::PipelineLayout& getPipelineLayout() const {
+        return pipelineLayout;
+    }
+    const vk::raii::Pipeline& getPipeline() const {
+        return pipeline;
+    }
 private:
     const VulkanContext& context;
     const SwapChain& swapChain;
