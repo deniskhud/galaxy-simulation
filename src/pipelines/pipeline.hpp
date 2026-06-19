@@ -4,11 +4,20 @@
 #include "../core/context.hpp"
 #include "../core/swapchain.hpp"
 #include <fstream>
+
+struct SimParams {
+    float time;
+    float maxOrbitalSpeed;
+    float coreRadius;
+    uint32_t particleCount;
+};
+
 class Pipeline {
 public:
     Pipeline(const VulkanContext& context, const SwapChain& swapChain) : context(context), swapChain(swapChain) {
         createDescriptorSetLayout();
         createPipeline();
+        createComputePipeline();
     }
     const vk::raii::DescriptorSetLayout& getDescriptorSetLayout() const {
         return descriptorSetLayout;
@@ -19,6 +28,14 @@ public:
     }
     const vk::raii::Pipeline& getPipeline() const {
         return pipeline;
+    }
+
+    const vk::raii::DescriptorSetLayout& getComputeDescriptorSetLayout() const { return computeDescriptorSetLayout; }
+    const vk::raii::PipelineLayout& getComputePipelineLayout() const {
+        return computePipelineLayout;
+    }
+    const vk::raii::Pipeline& getComputePipeline() const {
+        return computePipeline;
     }
 private:
     const VulkanContext& context;
@@ -35,7 +52,7 @@ private:
     vk::raii::DescriptorSetLayout computeDescriptorSetLayout = nullptr;
 
     bool createPipeline();
-    void createComputePipeline();
+    bool createComputePipeline();
 
     [[nodiscard]] std::vector<char> readShaderFile(const std::string& filename) const;
     [[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector<char> &code);

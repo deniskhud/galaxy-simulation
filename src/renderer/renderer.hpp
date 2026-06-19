@@ -6,7 +6,7 @@
 #include "../pipelines/pipeline.hpp"
 #include "../core/descriptors.hpp"
 #include "../scene/particle.hpp"
-
+#include <chrono>
 class Renderer {
 public:
     Renderer(const VulkanContext& context, SwapChain& swapChain, const Pipeline& pipeline,
@@ -15,9 +15,13 @@ public:
     void drawFrame();
 
 private:
+
+    std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
+    float totalTime = 0.0f;
+
     vk::raii::CommandPool createCommandPool() const;
     vk::raii::CommandBuffer createCommandBuffer() const;
-    void recordCommandBuffer(uint32_t imageIndex);
+    void recordCommandBuffer(uint32_t imageIndex, float deltaTime);
 
     const VulkanContext& context;
     SwapChain& swapChain;

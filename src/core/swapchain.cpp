@@ -47,7 +47,7 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
         .imageSharingMode = vk::SharingMode::eExclusive,
         .preTransform = surfaceCapabilities.currentTransform,
         .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        .presentMode = presentMode,
+        .presentMode = vk::PresentModeKHR::eFifo,
         .clipped = true,
         .oldSwapchain = nullptr
     };

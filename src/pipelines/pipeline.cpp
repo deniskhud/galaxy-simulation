@@ -226,3 +226,46 @@ vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char> &cod
     };
     return {context.getDevice(), shaderModuleCreateInfo};
 }
+
+/* compute pipeline */
+bool Pipeline::createComputePipeline() {
+    try {
+        auto compShaderCode = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/comp.spv");
+        vk::raii::ShaderModule comp = createShaderModule(compShaderCode);
+
+
+
+        vk::PipelineShaderStageCreateInfo compShaderStageInfo{
+            .stage = vk::ShaderStageFlagBits::eCompute,
+            .module = *comp,
+            .pName = "main"
+        };
+
+        vk::PushConstantRange pushConstantRange{
+            .stageFlags = vk::ShaderStageFlagBits::eCompute,
+            .offset = 0,
+            .size = sizeof(SimParams),
+        };
+
+        vk::PipelineLayoutCreateInfo computeLayoutInfo{
+            .setLayoutCount = 1,
+            .pSetLayouts = &*computeDescriptorSetLayout,
+            .pushConstantRangeCount = 1,
+            .pPushConstantRanges = &pushConstantRange,
+        };
+
+        computePipelineLayout = vk::raii::PipelineLayout(context.getDevice(), computeLayoutInfo);
+
+        vk::ComputePipelineCreateInfo computePipelineInfo{
+            .stage = compShaderStageInfo,
+            .layout = *computePipelineLayout,
+        };
+
+        computePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
+
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to create compute pipeline: " << e.what() << std::endl;
+        return false;
+    }
+}

@@ -16,7 +16,7 @@ int main() {
 
     Pipeline pipeline(context, swapChain);
 
-    ParticleSystem particles(context, 1000);
+    ParticleSystem particles(context, 20000);
 
     auto [w, h] = window.getFrameBufferSize();
     Camera camera((float)w / (float)h);
@@ -26,13 +26,26 @@ int main() {
     auto uboData = camera.getUbo();
     cameraUbo.upload(&uboData, sizeof(uboData));
 
+    Buffer computeBuffer(
+    context,
+    sizeof(int),
+    vk::BufferUsageFlagBits::eStorageBuffer |
+    vk::BufferUsageFlagBits::eTransferDst,
+    vk::MemoryPropertyFlagBits::eDeviceLocal
+);
+
     DescriptorPool descriptors(context, pipeline,
-                               cameraUbo.get(), cameraUbo.getSize(),
-                               particles.getSsbo(), particles.getSsboSize());
+    cameraUbo.get(), cameraUbo.getSize(),
+    particles.getSsbo(), particles.getSsboSize(),
+    particles.getSsbo(), particles.getSsboSize());
 
     Renderer renderer(context, swapChain, pipeline, descriptors, particles);
 
     SDL_Event e;
+    float lastX = 0.0f;
+    float lastY = 0.0f;
+    bool rotating = false;
+
     bool running = true;
     while (running) {
         while (SDL_PollEvent(&e)) {
@@ -40,7 +53,54 @@ int main() {
             if (e.type == SDL_EVENT_WINDOW_RESIZED) {
                 window.framebufferResized = true;
             }
+            if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
+        e.button.button == SDL_BUTTON_LEFT)
+            {
+                rotating = true;
+
+                lastX = e.button.x;
+                lastY = e.button.y;
+            }
+            if (e.type == SDL_EVENT_MOUSE_BUTTON_UP &&
+        e.button.button == SDL_BUTTON_LEFT)
+            {
+                rotating = false;
+            }
+            if (
+        e.type == SDL_EVENT_MOUSE_MOTION &&
+        rotating
+    ) {
+                float dx =
+                    e.motion.x -
+                    lastX;
+
+                float dy =
+                    e.motion.y -
+                    lastY;
+
+                camera.rotate(dx, dy);
+
+                lastX =
+                    e.motion.x;
+
+                lastY =
+                    e.motion.y;
+    }
+
+            if (e.type == SDL_EVENT_MOUSE_WHEEL) {
+                camera.zoom(
+                    e.wheel.y
+                );
+            }
         }
+
+        uboData = camera.getUbo();
+
+        cameraUbo.upload(
+            &uboData,
+            sizeof(uboData)
+        );
+
         renderer.drawFrame();
 
         if (window.framebufferResized) {

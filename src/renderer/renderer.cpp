@@ -33,10 +33,42 @@ vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
     return std::move(buffers.front());
 }
 
-void Renderer::recordCommandBuffer(uint32_t imageIndex) {
+void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
     commandBuffer.begin(vk::CommandBufferBeginInfo{
         .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
     });
+
+    // ---- compute: симуляция галактики ----
+    SimParams params{
+        .time = totalTime,
+        .maxOrbitalSpeed = 1.f,
+        .coreRadius = 0.4f,
+        .particleCount = particles.getCount(),
+    };
+
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline.getComputePipeline());
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                      pipeline.getComputePipelineLayout(), 0,
+                                      *descriptors.getComputeSet(), {});
+    commandBuffer.pushConstants<SimParams>(pipeline.getComputePipelineLayout(),
+                                            vk::ShaderStageFlagBits::eCompute, 0, params);
+
+    uint32_t groupCount = (particles.getCount() + 255) / 256;
+    commandBuffer.dispatch(groupCount, 1, 1);
+
+    // барьер: compute-write -> vertex-read (тот самый, про который я писал раньше)
+    vk::BufferMemoryBarrier ssboBarrier{
+        .srcAccessMask = vk::AccessFlagBits::eShaderWrite,
+        .dstAccessMask = vk::AccessFlagBits::eVertexAttributeRead,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .buffer = particles.getSsbo(),
+        .offset = 0,
+        .size = VK_WHOLE_SIZE,
+    };
+    commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                                   vk::PipelineStageFlagBits::eVertexInput,
+                                   {}, {}, ssboBarrier, {});
 
     vk::Image image = swapChain.getImage(imageIndex);
     vk::ImageView view = swapChain.getImageView(imageIndex);
@@ -63,7 +95,7 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex) {
                                    {}, {}, {}, toColorAttachment);
 
     vk::ClearValue clearColor{};
-    clearColor.setColor(vk::ClearColorValue{std::array{0.02f, 0.02f, 0.05f, 1.0f}});
+    clearColor.setColor(vk::ClearColorValue{std::array{0.01f, 0.01f, 0.02f, 1.0f}});
 
     vk::RenderingAttachmentInfo colorAttachment{
         .imageView = view,
@@ -118,6 +150,13 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex) {
 }
 
 void Renderer::drawFrame() {
+
+    auto now = std::chrono::steady_clock::now();
+    float deltaTime = std::chrono::duration<float>(now - lastFrameTime).count();
+    lastFrameTime = now;
+    totalTime += deltaTime;
+
+
     [[maybe_unused]] auto waitResult =
         context.getDevice().waitForFences(*inFlightFence, VK_TRUE, UINT64_MAX);
     context.getDevice().resetFences(*inFlightFence);
@@ -131,7 +170,7 @@ void Renderer::drawFrame() {
         return;
     }
     commandBuffer.reset();
-    recordCommandBuffer(imageIndex);
+    recordCommandBuffer(imageIndex, deltaTime);
 
     vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     vk::SubmitInfo submitInfo{

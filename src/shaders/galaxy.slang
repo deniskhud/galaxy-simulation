@@ -1,6 +1,7 @@
 struct Particle {
     float4 position;
     float4 color;
+    float4 orbit;
 };
 
 struct CameraData {
@@ -35,6 +36,7 @@ VSOutput VSMain(uint vertexID : SV_VertexID)
 
 struct PSInput {
     float4 color : Color;
+    float2 uv    : SV_PointCoord;
 };
 
 struct PSOutput {
@@ -45,6 +47,13 @@ struct PSOutput {
 PSOutput PSMain(PSInput input)
 {
     PSOutput output;
+
+    float2 uv = input.uv * 2.0 - 1.0; // [-1..1]
+    float dist = dot(uv, uv);
+
+    if (dist > 1.0)
+        discard;
+
     output.color = input.color;
     return output;
 }

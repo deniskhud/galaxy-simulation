@@ -13,12 +13,19 @@ class Camera {
 public:
     explicit Camera(float aspectRatio);
 
+    void rotate(float dyaw, float dpitch);
+    void zoom(float delta);
     CameraUbo getUbo() const;
 
 private:
-    glm::vec3 position{0.0f, 3.0f, 8.0f};
+    //glm::vec3 position{0.0f, 15.0f, 15.0f};
     glm::vec3 target{0.0f, 0.0f, 0.0f};
-    glm::vec3 up{0.0f, 1.0f, 0.0f};
+    //glm::vec3 up{0.0f, 0.0f, -1.0f};
+
+    float distance = 20.0f;
+
+    float yaw = 45.0f;
+    float pitch = -45.0f;
 
     float fovYDegrees = 45.0f;
     float aspectRatio;
