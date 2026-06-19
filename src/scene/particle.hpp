@@ -25,8 +25,6 @@ private:
     Buffer ssbo;
 
     static constexpr float kPi = 3.14159265358979323846f;
-
-
 };
 
 #endif //GALACTIC_PARTICLE_HPP

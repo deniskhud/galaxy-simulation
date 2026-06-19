@@ -224,5 +224,5 @@ vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char> &cod
         .codeSize = code.size(),
         .pCode = reinterpret_cast<const uint32_t*>(code.data()),
     };
-    return vk::raii::ShaderModule(context.getDevice(), shaderModuleCreateInfo);
+    return {context.getDevice(), shaderModuleCreateInfo};
 }

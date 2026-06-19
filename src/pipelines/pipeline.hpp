@@ -37,8 +37,8 @@ private:
     bool createPipeline();
     void createComputePipeline();
 
-    std::vector<char> readShaderFile(const std::string& filename) const;
-    vk::raii::ShaderModule createShaderModule(const std::vector<char> &code);
+    [[nodiscard]] std::vector<char> readShaderFile(const std::string& filename) const;
+    [[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector<char> &code);
 
     bool createDescriptorSetLayout();
 };

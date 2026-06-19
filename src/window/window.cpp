@@ -3,7 +3,6 @@
 
 Window::Window() {
     SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
-    // В SDL3 функция возвращает true при успехе
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         throw std::runtime_error("Failed to init SDL3: " + std::string(SDL_GetError()));
     }
@@ -11,7 +10,7 @@ Window::Window() {
 
     std::cout << "Platform: " << SDL_GetCurrentVideoDriver() << "\n";
 
-    // Создаем окно с поддержкой Vulkan
+
     window = SDL_CreateWindow(
         "Vulkan SDL3 Window",
         WIDTH, HEIGHT,
@@ -30,8 +29,6 @@ Window::~Window() {
     if (window) {
         SDL_DestroyWindow(window);
     }
-
-    // Завершаем работу SDL3
     SDL_Quit();
 }
 
@@ -57,7 +54,7 @@ std::vector<const char*> Window::getRequiredInstanceExtensions() const {
     auto sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionsCount);
 
     std::vector extensions(sdlExtensions, sdlExtensions + sdlExtensionsCount);
-    if (true) {
+    if (enableValidationLayers) {
         extensions.push_back(vk::EXTDebugUtilsExtensionName);
     }
     return extensions;

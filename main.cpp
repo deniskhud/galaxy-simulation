@@ -37,8 +37,19 @@ int main() {
     while (running) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_EVENT_QUIT) running = false;
+            if (e.type == SDL_EVENT_WINDOW_RESIZED) {
+                window.framebufferResized = true;
+            }
         }
         renderer.drawFrame();
+
+        if (window.framebufferResized) {
+            context.getDevice().waitIdle();
+
+            swapChain.recreateSwapChain();
+
+            window.framebufferResized = false;
+        }
     }
     context.getDevice().waitIdle();
     return 0;

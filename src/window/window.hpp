@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
+#include "../include/inc.hpp"
+
 class Window final {
 private:
     int WIDTH = 1920, HEIGHT = 1080;
@@ -33,10 +35,8 @@ public:
         SDL_GetWindowSizeInPixels(window, &w, &h);
         return {w, h};
     }
-
+    bool framebufferResized = false;
     Window();
     ~Window();
 };
-
-
 #endif //WINDOW_HPP

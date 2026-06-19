@@ -10,11 +10,7 @@ import vulkan_hpp;
 #include <cstdint>
 #include <iostream>
 
-#ifdef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
+
 
 #include "../window/window.hpp"
 
@@ -53,9 +49,6 @@ private:
     bool isDeviceSupportExtensions(const std::vector<vk::ExtensionProperties>& deviceExtensions);
 
     std::uint32_t findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface);
-public:
-    VulkanContext(const Window& window);
-    ~VulkanContext();
 
     void createInstance(const std::vector<const char*>& requiredInstanceExtensions);
     void pickPhysicalDevice();
@@ -63,6 +56,10 @@ public:
     void setupDebugMessenger();
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
                                                           const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+
+public:
+    VulkanContext(const Window& window);
+    ~VulkanContext();
 
     /* getters */
     const vk::raii::Device& getDevice() const;
