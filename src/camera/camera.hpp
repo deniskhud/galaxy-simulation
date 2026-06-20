@@ -3,7 +3,8 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include "../core/buffer.hpp"
+#include <memory>
 struct alignas(16) CameraUbo {
     glm::mat4 view;
     glm::mat4 proj;
@@ -11,12 +12,16 @@ struct alignas(16) CameraUbo {
 
 class Camera {
 public:
-    explicit Camera(float aspectRatio);
+    Camera(const VulkanContext& context, float aspectRatio);
 
     void rotate(float dyaw, float dpitch);
     void zoom(float delta);
     CameraUbo getUbo() const;
 
+    const Buffer& getCameraBuffer() const {
+        return *cameraUboBuffer;
+    }
+    void uploadUbo();
 private:
     //glm::vec3 position{0.0f, 15.0f, 15.0f};
     glm::vec3 target{0.0f, 0.0f, 0.0f};
@@ -31,6 +36,8 @@ private:
     float aspectRatio;
     float nearPlane = 0.1f;
     float farPlane = 100.0f;
+
+    std::unique_ptr<Buffer> cameraUboBuffer;
 };
 
 #endif //GALACTIC_CAMERA_HPP

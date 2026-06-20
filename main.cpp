@@ -19,12 +19,7 @@ int main() {
     ParticleSystem particles(context, 20000);
 
     auto [w, h] = window.getFrameBufferSize();
-    Camera camera((float)w / (float)h);
-    Buffer cameraUbo(context, sizeof(CameraUbo),
-                     vk::BufferUsageFlagBits::eUniformBuffer,
-                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    auto uboData = camera.getUbo();
-    cameraUbo.upload(&uboData, sizeof(uboData));
+    Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
 
     Buffer computeBuffer(
     context,
@@ -35,7 +30,7 @@ int main() {
 );
 
     DescriptorPool descriptors(context, pipeline,
-    cameraUbo.get(), cameraUbo.getSize(),
+    camera.getCameraBuffer().get(), camera.getCameraBuffer().getSize(),
     particles.getSsbo(), particles.getSsboSize(),
     particles.getSsbo(), particles.getSsboSize());
 
@@ -93,13 +88,7 @@ int main() {
                 );
             }
         }
-
-        uboData = camera.getUbo();
-
-        cameraUbo.upload(
-            &uboData,
-            sizeof(uboData)
-        );
+        camera.uploadUbo();
 
         renderer.drawFrame();
 
