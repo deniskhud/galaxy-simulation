@@ -47,7 +47,7 @@ vk::raii::DeviceMemory Buffer::allocateMemory() {
 
 void Buffer::upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize offset) {
     if (!mappedPtr) {
-        throw std::runtime_error("Buffer::upload вызван на буфере без host-visible памяти");
+        throw std::runtime_error("Buffer: upload is called on a buffer with no host-visible memory");
     }
     std::memcpy(static_cast<char*>(mappedPtr) + offset, data, uploadSize);
 }

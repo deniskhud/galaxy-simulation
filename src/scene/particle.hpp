@@ -15,15 +15,16 @@ class ParticleSystem {
 public:
     ParticleSystem(const VulkanContext& context, std::uint32_t count);
 
-    vk::Buffer getSsbo() const { return ssbo.get(); }
-    vk::DeviceSize getSsboSize() const { return ssbo.getSize(); }
+    const Buffer& getSsboBuffer() const {
+        return *ssboBuffer;
+    }
     std::uint32_t getCount() const { return count; }
 
 private:
     static std::vector<Particle> generateGalaxy(std::uint32_t count);
 
     std::uint32_t count;
-    Buffer ssbo;
+    std::unique_ptr<Buffer> ssboBuffer;
 
     static constexpr float kPi = 3.14159265358979323846f;
 };

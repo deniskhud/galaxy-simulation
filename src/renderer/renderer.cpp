@@ -38,10 +38,10 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
         .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
     });
 
-    // ---- compute: симуляция галактики ----
+
     SimParams params{
         .time = totalTime,
-        .maxOrbitalSpeed = 1.f,
+        .maxOrbitalSpeed = 0.7f,
         .coreRadius = 0.4f,
         .particleCount = particles.getCount(),
     };
@@ -56,13 +56,12 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
     uint32_t groupCount = (particles.getCount() + 255) / 256;
     commandBuffer.dispatch(groupCount, 1, 1);
 
-    // барьер: compute-write -> vertex-read (тот самый, про который я писал раньше)
     vk::BufferMemoryBarrier ssboBarrier{
         .srcAccessMask = vk::AccessFlagBits::eShaderWrite,
         .dstAccessMask = vk::AccessFlagBits::eVertexAttributeRead,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .buffer = particles.getSsbo(),
+        .buffer = particles.getSsboBuffer().get(),
         .offset = 0,
         .size = VK_WHOLE_SIZE,
     };
@@ -95,7 +94,7 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
                                    {}, {}, {}, toColorAttachment);
 
     vk::ClearValue clearColor{};
-    clearColor.setColor(vk::ClearColorValue{std::array{0.01f, 0.01f, 0.02f, 1.0f}});
+    clearColor.setColor(vk::ClearColorValue{std::array{0.00f, 0.00f, 0.00f, 1.0f}});
 
     vk::RenderingAttachmentInfo colorAttachment{
         .imageView = view,

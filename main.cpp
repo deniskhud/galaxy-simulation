@@ -16,7 +16,7 @@ int main() {
 
     Pipeline pipeline(context, swapChain);
 
-    ParticleSystem particles(context, 20000);
+    ParticleSystem particles(context, 15000);
 
     auto [w, h] = window.getFrameBufferSize();
     Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
@@ -31,8 +31,8 @@ int main() {
 
     DescriptorPool descriptors(context, pipeline,
     camera.getCameraBuffer().get(), camera.getCameraBuffer().getSize(),
-    particles.getSsbo(), particles.getSsboSize(),
-    particles.getSsbo(), particles.getSsboSize());
+    particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize(),
+    particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
 
     Renderer renderer(context, swapChain, pipeline, descriptors, particles);
 
