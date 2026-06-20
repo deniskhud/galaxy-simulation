@@ -5,29 +5,14 @@
 
 class SwapChain {
 public:
-    SwapChain(const VulkanContext& context, const Window& window)
-    : context(context),window(window) {
-        createSwapChain(context.getSurface());
-        createImageViews();
-    }
+    SwapChain(const VulkanContext& context, const Window& window);
 
-    vk::Format getSwapChainImageFormat() const {
-        return swapChainSurfaceFormat.format;
-    }
-
-    const vk::raii::SwapchainKHR& getSwapchain() const {
-        return swapChain;
-    }
-    const vk::Extent2D& getExtent() const {
-        return swapChainExtent;
-    }
-    const vk::raii::ImageView& getImageView(std::uint32_t index) const {
-        return imageViews.at(index);
-    }
-    const vk::Image& getImage(std::uint32_t index) const {
-        return swapChainImages.at(index);
-    }
-
+    /*** getters ***/
+    vk::Format getSwapChainImageFormat() const;
+    const vk::raii::SwapchainKHR& getSwapchain() const;
+    const vk::Extent2D& getExtent() const;
+    const vk::raii::ImageView& getImageView(std::uint32_t index) const;
+    const vk::Image& getImage(std::uint32_t index) const;
     void recreateSwapChain();
 private:
     const VulkanContext& context;
@@ -44,10 +29,9 @@ private:
 
     vk::SurfaceFormatKHR chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const &availableFormats);
     vk::PresentModeKHR chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const &availablePresentModes);
-    vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities);
+    [[nodiscard]] vk::Extent2D chooseSwapExtent(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities);
     uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const &surfaceCapabilities);
 
     void createImageViews();
 };
-
 #endif //SWAPCHAIN_HPP

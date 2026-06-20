@@ -10,11 +10,22 @@ import vulkan_hpp;
 #include <cstdint>
 #include <iostream>
 
-
-
 #include "../window/window.hpp"
 
 class VulkanContext final {
+public:
+    VulkanContext(const Window& window);
+    ~VulkanContext();
+
+    /* getters */
+    const vk::raii::Device& getDevice() const;
+    const vk::raii::PhysicalDevice& getPhysicalDevice() const;
+    std::uint32_t getGraphicsQueueFamilyIndex() const;
+    const vk::raii::Queue& getGraphicsQueue() const;
+    const vk::raii::Queue& getPresentQueue() const;
+    const vk::raii::Instance& getInstance() const;
+    const vk::raii::SurfaceKHR& getSurface() const;
+
 private:
     vk::raii::Context context;
     vk::raii::Instance instance = nullptr;
@@ -28,19 +39,21 @@ private:
 
     vk::DebugUtilsMessengerEXT debugMessenger;
 
-    const std::vector<char const*> validationLayers {
+    const std::vector<char const*> requiredValidationLayers {
         "VK_LAYER_KHRONOS_validation"
     };
-
     [[nodiscard]] std::vector<char const*> setupValidationLayer();
 
     bool isDeviceSuitable(const vk::raii::PhysicalDevice &physicalDevice);
+
     const std::vector<vk::QueueFlagBits> requiredDeviceQueues {
         vk::QueueFlagBits::eGraphics,
     };
     const std::vector<const char*> requiredDeviceExtensions {
         vk::KHRSwapchainExtensionName,
     };
+
+    void checkExtensionsSupport(const std::vector<const char*>& requiredInstanceExtensions);
 
     /**
      * Returns true if all required queue families are available.
@@ -56,18 +69,5 @@ private:
     void setupDebugMessenger();
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
                                                           const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-public:
-    VulkanContext(const Window& window);
-    ~VulkanContext();
-
-    /* getters */
-    const vk::raii::Device& getDevice() const;
-    const vk::raii::PhysicalDevice& getPhysicalDevice() const;
-    const std::uint32_t getGraphicsQueueFamilyIndex() const;
-    const vk::raii::Queue& getGraphicsQueue() const;
-    const vk::raii::Queue& getPresentQueue() const;
-    const vk::raii::Instance& getInstance() const;
-    const vk::raii::SurfaceKHR& getSurface() const;
 };
 #endif //CONTEXT_HPP

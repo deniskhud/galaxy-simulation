@@ -14,29 +14,15 @@ struct SimParams {
 
 class Pipeline {
 public:
-    Pipeline(const VulkanContext& context, const SwapChain& swapChain) : context(context), swapChain(swapChain) {
-        createDescriptorSetLayout();
-        createPipeline();
-        createComputePipeline();
-    }
-    const vk::raii::DescriptorSetLayout& getDescriptorSetLayout() const {
-        return descriptorSetLayout;
-    }
+    Pipeline(const VulkanContext& context, const SwapChain& swapChain);
 
-    const vk::raii::PipelineLayout& getPipelineLayout() const {
-        return pipelineLayout;
-    }
-    const vk::raii::Pipeline& getPipeline() const {
-        return pipeline;
-    }
+    const vk::raii::DescriptorSetLayout& getDescriptorSetLayout() const;
 
-    const vk::raii::DescriptorSetLayout& getComputeDescriptorSetLayout() const { return computeDescriptorSetLayout; }
-    const vk::raii::PipelineLayout& getComputePipelineLayout() const {
-        return computePipelineLayout;
-    }
-    const vk::raii::Pipeline& getComputePipeline() const {
-        return computePipeline;
-    }
+    const vk::raii::PipelineLayout& getPipelineLayout() const;
+    const vk::raii::Pipeline& getPipeline() const;
+    const vk::raii::DescriptorSetLayout& getComputeDescriptorSetLayout() const;
+    const vk::raii::PipelineLayout& getComputePipelineLayout() const;
+    const vk::raii::Pipeline& getComputePipeline() const;
 private:
     const VulkanContext& context;
     const SwapChain& swapChain;
@@ -54,8 +40,8 @@ private:
     bool createPipeline();
     bool createComputePipeline();
 
-    [[nodiscard]] std::vector<char> readShaderFile(const std::string& filename) const;
-    [[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector<char> &code);
+    [[nodiscard]] static std::vector<char> readShaderFile(const std::string& filename);
+    [[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector<char> &code) const;
 
     bool createDescriptorSetLayout();
 };

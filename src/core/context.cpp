@@ -1,7 +1,5 @@
 #include "context.hpp"
 
-#include <queue>
-
 VulkanContext::VulkanContext(const Window& window) {
     createInstance(window.getRequiredInstanceExtensions());
     setupDebugMessenger();
@@ -29,17 +27,8 @@ void VulkanContext::createInstance(const std::vector<const char*>& requiredInsta
         validationLayers = setupValidationLayer();
     }
     // Check if the required extensions are supported by the Vulkan implementation.
-    auto extensionProperties = context.enumerateInstanceExtensionProperties();
-		auto unsupportedPropertyIt =
-		    std::ranges::find_if(requiredInstanceExtensions,
-		                         [&extensionProperties](auto const &requiredExtension) {
-			                         return std::ranges::none_of(extensionProperties,
-			                                                     [requiredExtension](auto const &extensionProperty) { return strcmp(extensionProperty.extensionName, requiredExtension) == 0; });
-		                         });
-		if (unsupportedPropertyIt != requiredInstanceExtensions.end())
-		{
-			throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
-		}
+    checkExtensionsSupport(requiredInstanceExtensions);
+
 
     vk::InstanceCreateInfo createInfo{
         .pApplicationInfo        = &appInfo,
@@ -52,9 +41,9 @@ void VulkanContext::createInstance(const std::vector<const char*>& requiredInsta
 }
 
 std::vector<char const*> VulkanContext::setupValidationLayer() {
-    std::vector<char const*> requiredLayers;
-    if (true) {
-        requiredLayers.assign(validationLayers.begin(), validationLayers.end());
+    std::vector<char const*> requiredLayers{};
+    if (enableValidationLayers) {
+        requiredLayers.assign(requiredValidationLayers.begin(), requiredValidationLayers.end());
     }
 
     // Check if the required layers are supported by the Vulkan implementation.
@@ -143,6 +132,20 @@ bool VulkanContext::isDeviceSupportExtensions(const std::vector<vk::ExtensionPro
     });
 }
 
+void VulkanContext::checkExtensionsSupport(const std::vector<const char*>& requiredInstanceExtensions) {
+    auto extensionProperties = context.enumerateInstanceExtensionProperties();
+    auto unsupportedPropertyIt =
+        std::ranges::find_if(requiredInstanceExtensions,
+                             [&extensionProperties](auto const &requiredExtension) {
+                                 return std::ranges::none_of(extensionProperties,
+                                                             [requiredExtension](auto const &extensionProperty) { return strcmp(extensionProperty.extensionName, requiredExtension) == 0; });
+                             });
+    if (unsupportedPropertyIt != requiredInstanceExtensions.end())
+    {
+        throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
+    }
+}
+
 std::uint32_t VulkanContext::findQueueFamilyIndex(vk::QueueFlagBits requiredFlag, const vk::raii::SurfaceKHR& surface) {
     auto queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
     for (uint32_t i = 0; i < queueFamilyProperties.size(); i++) {
@@ -197,7 +200,7 @@ const vk::raii::PhysicalDevice& VulkanContext::getPhysicalDevice() const {
     return physicalDevice;
 }
 
-const std::uint32_t VulkanContext::getGraphicsQueueFamilyIndex() const {
+std::uint32_t VulkanContext::getGraphicsQueueFamilyIndex() const {
     return queueIndex;
 }
 

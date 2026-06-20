@@ -2,8 +2,8 @@
 
 Camera::Camera(const VulkanContext& context, float aspectRatio) : aspectRatio(aspectRatio) {
     cameraUboBuffer = std::make_unique<Buffer>(context, sizeof(CameraUbo),
-                     vk::BufferUsageFlagBits::eUniformBuffer,
-                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vk::BufferUsageFlagBits::eUniformBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     uploadUbo();
 }
@@ -15,8 +15,7 @@ void Camera::uploadUbo() {
 
 CameraUbo Camera::getUbo() const {
     CameraUbo ubo{};
-
-    glm::vec3 position;
+    glm::vec3 position{};
 
     position.x =
         target.x +
@@ -51,33 +50,16 @@ CameraUbo Camera::getUbo() const {
         );
 
     ubo.proj[1][1] *= -1;
-
     return ubo;
 }
 
-void Camera::rotate(
-    float dyaw,
-    float dpitch
-) {
+void Camera::rotate(float dyaw, float dpitch) {
     yaw += dyaw;
-
     pitch += dpitch;
-
-    pitch =
-        glm::clamp(
-            pitch,
-            -89.0f,
-            89.0f
-        );
+    pitch = glm::clamp(pitch, -89.0f, 89.0f);
 }
 
 void Camera::zoom(float delta) {
     distance -= delta;
-
-    distance =
-        glm::clamp(
-            distance,
-            3.0f,
-            100.0f
-        );
+    distance = glm::clamp(distance, 3.0f, 100.0f);
 }

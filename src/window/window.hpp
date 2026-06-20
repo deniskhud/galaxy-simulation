@@ -10,7 +10,7 @@
 
 class Window final {
 private:
-    int WIDTH = 1920, HEIGHT = 1080;
+    int width{}, height{};
     SDL_Window* window = nullptr;
 
     bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
@@ -24,17 +24,13 @@ public:
      * @param instance Vulkan instance
      * @return Vulkan surface handle
      */
-    vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance) const;
-    std::vector<const char*> getRequiredInstanceExtensions() const;
+    [[nodiscard]] vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance) const;
+    [[nodiscard]] std::vector<const char*> getRequiredInstanceExtensions() const;
 
     /*
      * @return {width, height}
      */
-    [[nodiscard]] std::pair<int, int> getFrameBufferSize() const {
-        int w = 0, h = 0;
-        SDL_GetWindowSizeInPixels(window, &w, &h);
-        return {w, h};
-    }
+    [[nodiscard]] std::pair<int, int> getFrameBufferSize() const;
     bool framebufferResized = false;
     Window();
     ~Window();

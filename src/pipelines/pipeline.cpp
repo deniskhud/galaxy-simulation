@@ -1,4 +1,11 @@
 #include "pipeline.hpp"
+
+Pipeline::Pipeline(const VulkanContext& context, const SwapChain& swapChain) : context(context), swapChain(swapChain) {
+    createDescriptorSetLayout();
+    createPipeline();
+    createComputePipeline();
+}
+
 bool Pipeline::createPipeline() {
     try{
         auto vertShader = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/vert.spv");
@@ -158,15 +165,17 @@ bool Pipeline::createDescriptorSetLayout() {
     try {
         // Create descriptor set layout bindings
         std::array<vk::DescriptorSetLayoutBinding, 2> graphicsBindings = {
+            // camera
             vk::DescriptorSetLayoutBinding{
                 .binding        = 0,
-                .descriptorType = vk::DescriptorType::eUniformBuffer,  // камера (view/proj)
+                .descriptorType = vk::DescriptorType::eUniformBuffer,
                 .descriptorCount = 1,
                 .stageFlags     = vk::ShaderStageFlagBits::eVertex,
             },
+            // particles
             vk::DescriptorSetLayoutBinding{
                 .binding        = 1,
-                .descriptorType = vk::DescriptorType::eStorageBuffer,  // SSBO частиц — только read
+                .descriptorType = vk::DescriptorType::eStorageBuffer,
                 .descriptorCount = 1,
                 .stageFlags     = vk::ShaderStageFlagBits::eVertex,
             },
@@ -175,7 +184,7 @@ bool Pipeline::createDescriptorSetLayout() {
         std::array<vk::DescriptorSetLayoutBinding, 1> computeBindings = {
             vk::DescriptorSetLayoutBinding{
                 .binding        = 0,
-                .descriptorType = vk::DescriptorType::eStorageBuffer,  // SSBO частиц — read/write
+                .descriptorType = vk::DescriptorType::eStorageBuffer,
                 .descriptorCount = 1,
                 .stageFlags     = vk::ShaderStageFlagBits::eCompute,
             },
@@ -188,6 +197,7 @@ bool Pipeline::createDescriptorSetLayout() {
           };
         descriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), layoutInfo);
 
+        // for compute
         vk::DescriptorSetLayoutCreateInfo computeLayoutInfo{
             .bindingCount = static_cast<uint32_t>(computeBindings.size()),
             .pBindings = computeBindings.data()
@@ -202,7 +212,7 @@ bool Pipeline::createDescriptorSetLayout() {
 }
 
 
-std::vector<char> Pipeline::readShaderFile(const std::string &filename) const {
+std::vector<char> Pipeline::readShaderFile(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
@@ -213,13 +223,13 @@ std::vector<char> Pipeline::readShaderFile(const std::string &filename) const {
     std::vector<char> resultBuffer(fileSize);
 
     file.seekg(0);
-    file.read(resultBuffer.data(), fileSize);
+    file.read(resultBuffer.data(), static_cast<long>(fileSize));
     file.close();
 
     return resultBuffer;
 }
 
-vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char> &code) {
+vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char> &code) const {
     vk::ShaderModuleCreateInfo shaderModuleCreateInfo = {
         .codeSize = code.size(),
         .pCode = reinterpret_cast<const uint32_t*>(code.data()),
@@ -232,8 +242,6 @@ bool Pipeline::createComputePipeline() {
     try {
         auto compShaderCode = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/comp.spv");
         vk::raii::ShaderModule comp = createShaderModule(compShaderCode);
-
-
 
         vk::PipelineShaderStageCreateInfo compShaderStageInfo{
             .stage = vk::ShaderStageFlagBits::eCompute,
@@ -268,4 +276,24 @@ bool Pipeline::createComputePipeline() {
         std::cerr << "Failed to create compute pipeline: " << e.what() << std::endl;
         return false;
     }
+}
+
+/*** getters ***/
+const vk::raii::DescriptorSetLayout& Pipeline::getDescriptorSetLayout() const {
+    return descriptorSetLayout;
+}
+const vk::raii::PipelineLayout& Pipeline::getPipelineLayout() const {
+    return pipelineLayout;
+}
+const vk::raii::Pipeline& Pipeline::getPipeline() const {
+    return pipeline;
+}
+const vk::raii::DescriptorSetLayout& Pipeline::getComputeDescriptorSetLayout() const {
+    return computeDescriptorSetLayout;
+}
+const vk::raii::PipelineLayout& Pipeline::getComputePipelineLayout() const {
+    return computePipelineLayout;
+}
+const vk::raii::Pipeline& Pipeline::getComputePipeline() const {
+    return computePipeline;
 }

@@ -10,7 +10,7 @@ struct alignas(16) CameraUbo {
     glm::mat4 proj;
 };
 
-class Camera {
+class Camera final {
 public:
     Camera(const VulkanContext& context, float aspectRatio);
 
@@ -23,21 +23,18 @@ public:
     }
     void uploadUbo();
 private:
-    //glm::vec3 position{0.0f, 15.0f, 15.0f};
     glm::vec3 target{0.0f, 0.0f, 0.0f};
-    //glm::vec3 up{0.0f, 0.0f, -1.0f};
 
     float distance = 20.0f;
 
     float yaw = 45.0f;
     float pitch = -45.0f;
 
-    float fovYDegrees = 45.0f;
-    float aspectRatio;
+    float fovYDegrees = 90.0f;
+    float aspectRatio{16.0 / 9.0};
     float nearPlane = 0.1f;
     float farPlane = 100.0f;
 
     std::unique_ptr<Buffer> cameraUboBuffer;
 };
-
 #endif //GALACTIC_CAMERA_HPP

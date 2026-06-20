@@ -1,5 +1,10 @@
 #include "swapchain.hpp"
 
+SwapChain::SwapChain(const VulkanContext& context, const Window& window) : context(context), window(window) {
+    createSwapChain(context.getSurface());
+    createImageViews();
+}
+
 vk::SurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const &availableFormats) {
     const auto formatIt = std::ranges::find_if(availableFormats, [](const auto& format) {
         return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
@@ -97,4 +102,21 @@ void SwapChain::createImageViews() {
         imageViewCreateInfo.image = image;
         imageViews.emplace_back(vk::raii::ImageView(context.getDevice(), imageViewCreateInfo));
     }
+}
+
+/*** getters ***/
+vk::Format SwapChain::getSwapChainImageFormat() const {
+    return swapChainSurfaceFormat.format;
+}
+const vk::raii::SwapchainKHR& SwapChain::getSwapchain() const {
+    return swapChain;
+}
+const vk::Extent2D& SwapChain::getExtent() const {
+    return swapChainExtent;
+}
+const vk::raii::ImageView& SwapChain::getImageView(std::uint32_t index) const {
+    return imageViews.at(index);
+}
+const vk::Image& SwapChain::getImage(std::uint32_t index) const {
+    return swapChainImages.at(index);
 }

@@ -6,23 +6,23 @@ Window::Window() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         throw std::runtime_error("Failed to init SDL3: " + std::string(SDL_GetError()));
     }
-
-
     std::cout << "Platform: " << SDL_GetCurrentVideoDriver() << "\n";
 
 
-    window = SDL_CreateWindow(
-        "Vulkan SDL3 Window",
-        WIDTH, HEIGHT,
-        SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
-    );
+    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    if (mode) {
+        width = mode->w;
+        height = mode->h;
+    }
+
+    window = SDL_CreateWindow("Vulkan SDL3 Window", width, height,SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
 
     //SDL_AddEventWatch(framebufferResizeCallback, this);
 
     if (!window) {
         throw std::runtime_error("Failed to create SDL3 window: " + std::string(SDL_GetError()));
     }
-    std::cout << "Window created\n";
+    debugSystem::log(LogLevel::INFO, "window", "window created: width " + std::to_string(width) + ", height " + std::to_string(height));
 }
 
 Window::~Window() {
@@ -38,7 +38,6 @@ bool SDLCALL Window::framebufferResizeCallback(void* userdata, SDL_Event* event)
     /*app->framebufferResized = true;
     return app->framebufferResized;*/
     return true;
-
 }
 
 vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance) const {
@@ -58,4 +57,10 @@ std::vector<const char*> Window::getRequiredInstanceExtensions() const {
         extensions.push_back(vk::EXTDebugUtilsExtensionName);
     }
     return extensions;
+}
+
+std::pair<int, int> Window::getFrameBufferSize() const {
+    int w = 0, h = 0;
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+    return {w, h};
 }
