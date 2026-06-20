@@ -1,105 +1,92 @@
-#include "src/window/window.hpp"
-#include "src/core/context.hpp"
-#include "src/core/swapchain.hpp"
+#include "src/camera/camera.hpp"
 #include "src/core/buffer.hpp"
+#include "src/core/context.hpp"
 #include "src/core/descriptors.hpp"
+#include "src/core/swapchain.hpp"
 #include "src/pipelines/pipeline.hpp"
 #include "src/renderer/renderer.hpp"
 #include "src/scene/particle.hpp"
-#include "src/camera/camera.hpp"
+#include "src/window/window.hpp"
 
 int main() {
-    Window window {};
-    VulkanContext context(window);
+	Window window{};
+	VulkanContext context(window);
 
-    SwapChain swapChain(context, window);
+	SwapChain swapChain(context, window);
 
-    Pipeline pipeline(context, swapChain);
+	Pipeline pipeline(context, swapChain);
 
-    ParticleSystem particles(context, 15000);
+	ParticleSystem particles(context, 15000);
 
-    auto [w, h] = window.getFrameBufferSize();
-    Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
+	auto [w, h] = window.getFrameBufferSize();
+	Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
 
-    Buffer computeBuffer(
-    context,
-    sizeof(int),
-    vk::BufferUsageFlagBits::eStorageBuffer |
-    vk::BufferUsageFlagBits::eTransferDst,
-    vk::MemoryPropertyFlagBits::eDeviceLocal
-);
+	Buffer computeBuffer(context,
+	                     sizeof(int),
+	                     vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
+	                     vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-    DescriptorPool descriptors(context, pipeline,
-    camera.getCameraBuffer().get(), camera.getCameraBuffer().getSize(),
-    particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize(),
-    particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
+	DescriptorPool descriptors(context,
+	                           pipeline,
+	                           camera.getCameraBuffer().get(),
+	                           camera.getCameraBuffer().getSize(),
+	                           particles.getSsboBuffer().get(),
+	                           particles.getSsboBuffer().getSize(),
+	                           particles.getSsboBuffer().get(),
+	                           particles.getSsboBuffer().getSize());
 
-    Renderer renderer(context, swapChain, pipeline, descriptors, particles);
+	Renderer renderer(context, swapChain, pipeline, descriptors, particles);
 
-    SDL_Event e;
-    float lastX = 0.0f;
-    float lastY = 0.0f;
-    bool rotating = false;
+	SDL_Event e;
+	float lastX = 0.0f;
+	float lastY = 0.0f;
+	bool rotating = false;
 
-    bool running = true;
-    while (running) {
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_EVENT_QUIT) running = false;
-            if (e.type == SDL_EVENT_WINDOW_RESIZED) {
-                window.framebufferResized = true;
-            }
-            if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
-        e.button.button == SDL_BUTTON_LEFT)
-            {
-                rotating = true;
+	bool running = true;
+	while (running) {
+		while (SDL_PollEvent(&e)) {
+			if (e.type == SDL_EVENT_QUIT)
+				running = false;
+			if (e.type == SDL_EVENT_WINDOW_RESIZED) {
+				window.framebufferResized = true;
+			}
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_LEFT) {
+				rotating = true;
 
-                lastX = e.button.x;
-                lastY = e.button.y;
-            }
-            if (e.type == SDL_EVENT_MOUSE_BUTTON_UP &&
-        e.button.button == SDL_BUTTON_LEFT)
-            {
-                rotating = false;
-            }
-            if (
-        e.type == SDL_EVENT_MOUSE_MOTION &&
-        rotating
-    ) {
-                float dx =
-                    e.motion.x -
-                    lastX;
+				lastX = e.button.x;
+				lastY = e.button.y;
+			}
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_UP && e.button.button == SDL_BUTTON_LEFT) {
+				rotating = false;
+			}
+			if (e.type == SDL_EVENT_MOUSE_MOTION && rotating) {
+				float dx = e.motion.x - lastX;
 
-                float dy =
-                    e.motion.y -
-                    lastY;
+				float dy = e.motion.y - lastY;
 
-                camera.rotate(dx, dy);
+				camera.rotate(dx, dy);
 
-                lastX =
-                    e.motion.x;
+				lastX = e.motion.x;
 
-                lastY =
-                    e.motion.y;
-    }
+				lastY = e.motion.y;
+			}
 
-            if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-                camera.zoom(
-                    e.wheel.y
-                );
-            }
-        }
-        camera.uploadUbo();
+			if (e.type == SDL_EVENT_MOUSE_WHEEL) {
+				camera.zoom(e.wheel.y);
+			}
+		}
+		camera.uploadUbo();
 
-        renderer.drawFrame();
+		renderer.drawFrame();
 
-        if (window.framebufferResized) {
-            context.getDevice().waitIdle();
+		if (window.framebufferResized) {
+			context.getDevice().waitIdle();
 
-            swapChain.recreateSwapChain();
+			swapChain.recreateSwapChain();
 
-            window.framebufferResized = false;
-        }
-    }
-    context.getDevice().waitIdle();
-    return 0;
+			window.framebufferResized = false;
+		}
+	}
+	context.getDevice().waitIdle();
+	return 0;
 }
