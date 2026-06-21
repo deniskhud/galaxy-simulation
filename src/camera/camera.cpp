@@ -1,11 +1,12 @@
 #include "camera.hpp"
 
 Camera::Camera(const VulkanContext& context, float aspectRatio) : aspectRatio(aspectRatio) {
-	cameraUboBuffer =
-	    std::make_unique<Buffer>(context,
-	                             sizeof(CameraUbo),
-	                             vk::BufferUsageFlagBits::eUniformBuffer,
-	                             vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+	cameraUboBuffer = std::make_unique<Buffer>(
+	    context,
+	    sizeof(CameraUbo),
+	    vk::BufferUsageFlagBits::eUniformBuffer,
+	    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+	);
 
 	uploadUbo();
 }

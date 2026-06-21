@@ -1,11 +1,13 @@
 #include "descriptors.hpp"
 
-DescriptorPool::DescriptorPool(const VulkanContext& context,
-                               const Pipeline& pipeline,
-                               vk::Buffer cameraUbo,
-                               vk::DeviceSize uboSize,
-                               vk::Buffer particleSsbo,
-                               vk::DeviceSize ssboSize)
+DescriptorPool::DescriptorPool(
+    const VulkanContext& context,
+    const Pipeline& pipeline,
+    vk::Buffer cameraUbo,
+    vk::DeviceSize uboSize,
+    vk::Buffer particleSsbo,
+    vk::DeviceSize ssboSize
+)
     : context(context), pipeline(pipeline) {
 	createDescriptorPool(1, 1);
 	descriptorSet = allocateDescriptorSet(*pipeline.getDescriptorSetLayout());
@@ -27,14 +29,16 @@ DescriptorPool::DescriptorPool(const VulkanContext& context,
 	context.getDevice().updateDescriptorSets(writes, {});
 }
 
-DescriptorPool::DescriptorPool(const VulkanContext& context,
-                               const Pipeline& pipeline,
-                               vk::Buffer cameraUbo,
-                               vk::DeviceSize uboSize,
-                               vk::Buffer particleSsbo,
-                               vk::DeviceSize ssboSize,
-                               vk::Buffer computeBuffer,
-                               vk::DeviceSize computeBufferSize)
+DescriptorPool::DescriptorPool(
+    const VulkanContext& context,
+    const Pipeline& pipeline,
+    vk::Buffer cameraUbo,
+    vk::DeviceSize uboSize,
+    vk::Buffer particleSsbo,
+    vk::DeviceSize ssboSize,
+    vk::Buffer computeBuffer,
+    vk::DeviceSize computeBufferSize
+)
     : context(context), pipeline(pipeline) {
 	createDescriptorPool(2, 2); // 2 сета, 2 storage-буфера суммарно
 
@@ -67,7 +71,8 @@ DescriptorPool::DescriptorPool(const VulkanContext& context,
 
 vk::raii::DescriptorSet DescriptorPool::allocateDescriptorSet(vk::DescriptorSetLayout descriptorSetLayout) {
 	vk::DescriptorSetAllocateInfo allocInfo{
-	    .descriptorPool = descriptorPool, .descriptorSetCount = 1, .pSetLayouts = &descriptorSetLayout};
+	    .descriptorPool = descriptorPool, .descriptorSetCount = 1, .pSetLayouts = &descriptorSetLayout
+	};
 
 	auto sets = context.getDevice().allocateDescriptorSets(allocInfo);
 	return std::move(sets.front());

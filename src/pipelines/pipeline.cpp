@@ -15,10 +15,12 @@ bool Pipeline::createPipeline() {
 		vk::raii::ShaderModule frag = createShaderModule(fragShader);
 
 		vk::PipelineShaderStageCreateInfo vertexShaderCreateInfo = {
-		    .stage = vk::ShaderStageFlagBits::eVertex, .module = *vert, .pName = "main"};
+		    .stage = vk::ShaderStageFlagBits::eVertex, .module = *vert, .pName = "main"
+		};
 
 		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{
-		    .stage = vk::ShaderStageFlagBits::eFragment, .module = *frag, .pName = "main"};
+		    .stage = vk::ShaderStageFlagBits::eFragment, .module = *frag, .pName = "main"
+		};
 		vk::PipelineShaderStageCreateInfo shaderStages[] = {vertexShaderCreateInfo, fragShaderStageInfo};
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = {
@@ -34,35 +36,42 @@ bool Pipeline::createPipeline() {
 		};
 
 		vk::PipelineViewportStateCreateInfo viewportState{
-		    .viewportCount = 1, .pViewports = nullptr, .scissorCount = 1, .pScissors = nullptr};
+		    .viewportCount = 1, .pViewports = nullptr, .scissorCount = 1, .pScissors = nullptr
+		};
 
-		vk::PipelineRasterizationStateCreateInfo rasterizer{.depthClampEnable = VK_FALSE,
-		                                                    .rasterizerDiscardEnable = VK_FALSE,
-		                                                    .polygonMode = vk::PolygonMode::eFill,
-		                                                    .cullMode = vk::CullModeFlagBits::eNone,
-		                                                    .frontFace = vk::FrontFace::eCounterClockwise,
-		                                                    .depthBiasEnable = VK_FALSE,
-		                                                    .depthBiasConstantFactor = 0.0f,
-		                                                    .depthBiasClamp = 0.0f,
-		                                                    .depthBiasSlopeFactor = 0.0f,
-		                                                    .lineWidth = 1.0f};
-		vk::PipelineMultisampleStateCreateInfo multisampling{.rasterizationSamples = vk::SampleCountFlagBits::e1,
-		                                                     .sampleShadingEnable = VK_FALSE,
-		                                                     .minSampleShading = 1.0f,
-		                                                     .pSampleMask = nullptr,
-		                                                     .alphaToCoverageEnable = VK_FALSE,
-		                                                     .alphaToOneEnable = VK_FALSE};
+		vk::PipelineRasterizationStateCreateInfo rasterizer{
+		    .depthClampEnable = VK_FALSE,
+		    .rasterizerDiscardEnable = VK_FALSE,
+		    .polygonMode = vk::PolygonMode::eFill,
+		    .cullMode = vk::CullModeFlagBits::eNone,
+		    .frontFace = vk::FrontFace::eCounterClockwise,
+		    .depthBiasEnable = VK_FALSE,
+		    .depthBiasConstantFactor = 0.0f,
+		    .depthBiasClamp = 0.0f,
+		    .depthBiasSlopeFactor = 0.0f,
+		    .lineWidth = 1.0f
+		};
+		vk::PipelineMultisampleStateCreateInfo multisampling{
+		    .rasterizationSamples = vk::SampleCountFlagBits::e1,
+		    .sampleShadingEnable = VK_FALSE,
+		    .minSampleShading = 1.0f,
+		    .pSampleMask = nullptr,
+		    .alphaToCoverageEnable = VK_FALSE,
+		    .alphaToOneEnable = VK_FALSE
+		};
 
 		// Create depth stencil state info
-		vk::PipelineDepthStencilStateCreateInfo depthStencil{.depthTestEnable = vk::False,
-		                                                     .depthWriteEnable = vk::False,
-		                                                     .depthCompareOp = vk::CompareOp::eLess,
-		                                                     .depthBoundsTestEnable = VK_FALSE,
-		                                                     .stencilTestEnable = VK_FALSE,
-		                                                     .front = {},
-		                                                     .back = {},
-		                                                     .minDepthBounds = 0.0f,
-		                                                     .maxDepthBounds = 1.0f};
+		vk::PipelineDepthStencilStateCreateInfo depthStencil{
+		    .depthTestEnable = vk::False,
+		    .depthWriteEnable = vk::False,
+		    .depthCompareOp = vk::CompareOp::eLess,
+		    .depthBoundsTestEnable = VK_FALSE,
+		    .stencilTestEnable = VK_FALSE,
+		    .front = {},
+		    .back = {},
+		    .minDepthBounds = 0.0f,
+		    .maxDepthBounds = 1.0f
+		};
 
 		// Create color blend attachment state
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{
@@ -74,52 +83,62 @@ bool Pipeline::createPipeline() {
 		    .dstAlphaBlendFactor = vk::BlendFactor::eZero,
 		    .alphaBlendOp = vk::BlendOp::eAdd,
 		    .colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-		                      vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA};
+		                      vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+		};
 
 		// Create color blend state info
 		std::array blendConstants = {0.0f, 0.0f, 0.0f, 0.0f};
-		vk::PipelineColorBlendStateCreateInfo colorBlending{.logicOpEnable = VK_FALSE,
-		                                                    .logicOp = vk::LogicOp::eCopy,
-		                                                    .attachmentCount = 1,
-		                                                    .pAttachments = &colorBlendAttachment,
-		                                                    .blendConstants = blendConstants};
+		vk::PipelineColorBlendStateCreateInfo colorBlending{
+		    .logicOpEnable = VK_FALSE,
+		    .logicOp = vk::LogicOp::eCopy,
+		    .attachmentCount = 1,
+		    .pAttachments = &colorBlendAttachment,
+		    .blendConstants = blendConstants
+		};
 
 		// Create dynamic state info
 		std::vector dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 
 		vk::PipelineDynamicStateCreateInfo dynamicState{
-		    .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()), .pDynamicStates = dynamicStates.data()};
+		    .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()), .pDynamicStates = dynamicStates.data()
+		};
 
 		// Create pipeline layout
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{.setLayoutCount = 1,
-		                                                .pSetLayouts = &*descriptorSetLayout,
-		                                                .pushConstantRangeCount = 0,
-		                                                .pPushConstantRanges = nullptr};
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{
+		    .setLayoutCount = 1,
+		    .pSetLayouts = &*descriptorSetLayout,
+		    .pushConstantRangeCount = 0,
+		    .pPushConstantRanges = nullptr
+		};
 
 		pipelineLayout = vk::raii::PipelineLayout(context.getDevice(), pipelineLayoutInfo);
 		// Create graphics pipeline
-		vk::GraphicsPipelineCreateInfo pipelineInfo{.stageCount = 2,
-		                                            .pStages = shaderStages,
-		                                            .pVertexInputState = &vertexInputStateCreateInfo,
-		                                            .pInputAssemblyState = &inputAssembly,
-		                                            .pViewportState = &viewportState,
-		                                            .pRasterizationState = &rasterizer,
-		                                            .pMultisampleState = &multisampling,
-		                                            .pDepthStencilState = &depthStencil,
-		                                            .pColorBlendState = &colorBlending,
-		                                            .pDynamicState = &dynamicState,
-		                                            .layout = *pipelineLayout,
-		                                            .renderPass = nullptr,
-		                                            .subpass = 0,
-		                                            .basePipelineHandle = nullptr,
-		                                            .basePipelineIndex = -1};
+		vk::GraphicsPipelineCreateInfo pipelineInfo{
+		    .stageCount = 2,
+		    .pStages = shaderStages,
+		    .pVertexInputState = &vertexInputStateCreateInfo,
+		    .pInputAssemblyState = &inputAssembly,
+		    .pViewportState = &viewportState,
+		    .pRasterizationState = &rasterizer,
+		    .pMultisampleState = &multisampling,
+		    .pDepthStencilState = &depthStencil,
+		    .pColorBlendState = &colorBlending,
+		    .pDynamicState = &dynamicState,
+		    .layout = *pipelineLayout,
+		    .renderPass = nullptr,
+		    .subpass = 0,
+		    .basePipelineHandle = nullptr,
+		    .basePipelineIndex = -1
+		};
 
 		// Create pipeline with dynamic rendering
 		vk::Format swapChainFormat = swapChain.getSwapChainImageFormat();
-		vk::PipelineRenderingCreateInfo renderingInfo{.colorAttachmentCount = 1,
-		                                              .pColorAttachmentFormats = &swapChainFormat,
-		                                              .depthAttachmentFormat = vk::Format::eUndefined,
-		                                              .stencilAttachmentFormat = vk::Format::eUndefined};
+		vk::PipelineRenderingCreateInfo renderingInfo{
+		    .colorAttachmentCount = 1,
+		    .pColorAttachmentFormats = &swapChainFormat,
+		    .depthAttachmentFormat = vk::Format::eUndefined,
+		    .stencilAttachmentFormat = vk::Format::eUndefined
+		};
 
 		pipelineInfo.pNext = &renderingInfo;
 
@@ -162,13 +181,15 @@ bool Pipeline::createDescriptorSetLayout() {
 		};
 
 		// Create descriptor set layout
-		vk::DescriptorSetLayoutCreateInfo layoutInfo{.bindingCount = static_cast<uint32_t>(graphicsBindings.size()),
-		                                             .pBindings = graphicsBindings.data()};
+		vk::DescriptorSetLayoutCreateInfo layoutInfo{
+		    .bindingCount = static_cast<uint32_t>(graphicsBindings.size()), .pBindings = graphicsBindings.data()
+		};
 		descriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), layoutInfo);
 
 		// for compute
 		vk::DescriptorSetLayoutCreateInfo computeLayoutInfo{
-		    .bindingCount = static_cast<uint32_t>(computeBindings.size()), .pBindings = computeBindings.data()};
+		    .bindingCount = static_cast<uint32_t>(computeBindings.size()), .pBindings = computeBindings.data()
+		};
 		computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), computeLayoutInfo);
 		return true;
 	} catch (std::exception& e) {
@@ -209,7 +230,8 @@ bool Pipeline::createComputePipeline() {
 		vk::raii::ShaderModule comp = createShaderModule(compShaderCode);
 
 		vk::PipelineShaderStageCreateInfo compShaderStageInfo{
-		    .stage = vk::ShaderStageFlagBits::eCompute, .module = *comp, .pName = "main"};
+		    .stage = vk::ShaderStageFlagBits::eCompute, .module = *comp, .pName = "main"
+		};
 
 		vk::PushConstantRange pushConstantRange{
 		    .stageFlags = vk::ShaderStageFlagBits::eCompute,

@@ -5,17 +5,18 @@
 
 class Buffer {
 public:
-	Buffer(const VulkanContext& context,
-	       vk::DeviceSize size,
-	       vk::BufferUsageFlags usageFlags,
-	       vk::MemoryPropertyFlags memPropertyFlags);
+	Buffer(
+	    const VulkanContext& context,
+	    vk::DeviceSize size,
+	    vk::BufferUsageFlags usageFlags,
+	    vk::MemoryPropertyFlags memPropertyFlags
+	);
 
 	void upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize offset = 0);
 
-	static Buffer createDeviceLocal(const VulkanContext& context,
-	                                const void* data,
-	                                vk::DeviceSize size,
-	                                vk::BufferUsageFlags usageFlags);
+	static Buffer createDeviceLocal(
+	    const VulkanContext& context, const void* data, vk::DeviceSize size, vk::BufferUsageFlags usageFlags
+	);
 
 	vk::Buffer get() const { return *buffer; }
 	vk::DeviceSize getSize() const { return size; }

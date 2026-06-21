@@ -28,11 +28,13 @@ void VulkanContext::createInstance(const std::vector<const char*>& requiredInsta
 	// implementation.
 	checkExtensionsSupport(requiredInstanceExtensions);
 
-	vk::InstanceCreateInfo createInfo{.pApplicationInfo = &appInfo,
-	                                  .enabledLayerCount = static_cast<uint32_t>(validationLayers.size()),
-	                                  .ppEnabledLayerNames = validationLayers.data(),
-	                                  .enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size()),
-	                                  .ppEnabledExtensionNames = requiredInstanceExtensions.data()};
+	vk::InstanceCreateInfo createInfo{
+	    .pApplicationInfo = &appInfo,
+	    .enabledLayerCount = static_cast<uint32_t>(validationLayers.size()),
+	    .ppEnabledLayerNames = validationLayers.data(),
+	    .enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size()),
+	    .ppEnabledExtensionNames = requiredInstanceExtensions.data()
+	};
 
 	instance = vk::raii::Instance(context, createInfo);
 }
@@ -59,11 +61,13 @@ void VulkanContext::setupDebugMessenger() {
 	if (!enableValidationLayers)
 		return;
 
-	vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-	                                                    vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
-	vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-	                                                   vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-	                                                   vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+	vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(
+	    vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+	);
+	vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(
+	    vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+	    vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+	);
 	vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{
 	    .messageSeverity = severityFlags,
 	    .messageType = messageTypeFlags,
@@ -72,19 +76,21 @@ void VulkanContext::setupDebugMessenger() {
 	debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
 }
 
-VKAPI_ATTR vk::Bool32 VKAPI_CALL
-VulkanContext::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
-                             vk::DebugUtilsMessageTypeFlagsEXT type,
-                             const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                             void* pUserData) {
+VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanContext::debugCallback(
+    vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+    vk::DebugUtilsMessageTypeFlagsEXT type,
+    const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData
+) {
 	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 	return vk::False;
 }
 
 void VulkanContext::pickPhysicalDevice() {
 	auto physicalDevices = instance.enumeratePhysicalDevices();
-	auto const deviceIt = std::ranges::find_if(
-	    physicalDevices, [this](auto const& physicalDevice) { return isDeviceSuitable(physicalDevice); });
+	auto const deviceIt = std::ranges::find_if(physicalDevices, [this](auto const& physicalDevice) {
+		return isDeviceSuitable(physicalDevice);
+	});
 	if (deviceIt == physicalDevices.end()) {
 		throw std::runtime_error("Failed to find suitable physical device!");
 	}
@@ -100,9 +106,10 @@ bool VulkanContext::isDeviceSuitable(const vk::raii::PhysicalDevice& physicalDev
 	auto availableDeviceExtensions = physicalDevice.enumerateDeviceExtensionProperties();
 	bool supportDeviceExtensions = isDeviceSupportExtensions(availableDeviceExtensions);
 
-	auto features = physicalDevice.getFeatures2<vk::PhysicalDeviceFeatures2,
-	                                            vk::PhysicalDeviceVulkan11Features,
-	                                            vk::PhysicalDeviceVulkan13Features>();
+	auto features = physicalDevice.getFeatures2<
+	    vk::PhysicalDeviceFeatures2,
+	    vk::PhysicalDeviceVulkan11Features,
+	    vk::PhysicalDeviceVulkan13Features>();
 
 	bool supportRequiredFeatures = features.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering;
 
@@ -111,8 +118,9 @@ bool VulkanContext::isDeviceSuitable(const vk::raii::PhysicalDevice& physicalDev
 
 bool VulkanContext::isDeviceSupportQueues(const std::vector<vk::QueueFamilyProperties>& deviceQueues) {
 	return std::ranges::all_of(requiredDeviceQueues, [&deviceQueues](auto const& requiredFlag) {
-		return std::ranges::any_of(deviceQueues,
-		                           [&requiredFlag](auto const& queue) { return !!(queue.queueFlags & requiredFlag); });
+		return std::ranges::any_of(deviceQueues, [&requiredFlag](auto const& queue) {
+			return !!(queue.queueFlags & requiredFlag);
+		});
 	});
 }
 
@@ -150,10 +158,11 @@ std::uint32_t VulkanContext::findQueueFamilyIndex(vk::QueueFlagBits requiredFlag
 void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
 	queueIndex = findQueueFamilyIndex(vk::QueueFlagBits::eGraphics, surface);
 
-	vk::StructureChain<vk::PhysicalDeviceFeatures2,
-	                   vk::PhysicalDeviceVulkan11Features,
-	                   vk::PhysicalDeviceVulkan13Features,
-	                   vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+	vk::StructureChain<
+	    vk::PhysicalDeviceFeatures2,
+	    vk::PhysicalDeviceVulkan11Features,
+	    vk::PhysicalDeviceVulkan13Features,
+	    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
 	    featureChain = {
 	        {.features = {.samplerAnisotropy = true}},            // vk::PhysicalDeviceFeatures2
 	        {.shaderDrawParameters = true},                       // vk::PhysicalDeviceVulkan11Features
@@ -164,14 +173,16 @@ void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
 	float queuePriority = 0.5f;
 
 	vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
-	    .queueFamilyIndex = queueIndex, .queueCount = 1, .pQueuePriorities = &queuePriority};
+	    .queueFamilyIndex = queueIndex, .queueCount = 1, .pQueuePriorities = &queuePriority
+	};
 
-	vk::DeviceCreateInfo deviceCreateInfo{.pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
-	                                      .queueCreateInfoCount = 1,
-	                                      .pQueueCreateInfos = &deviceQueueCreateInfo,
-	                                      .enabledExtensionCount =
-	                                          static_cast<uint32_t>(requiredDeviceExtensions.size()),
-	                                      .ppEnabledExtensionNames = requiredDeviceExtensions.data()};
+	vk::DeviceCreateInfo deviceCreateInfo{
+	    .pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
+	    .queueCreateInfoCount = 1,
+	    .pQueueCreateInfos = &deviceQueueCreateInfo,
+	    .enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size()),
+	    .ppEnabledExtensionNames = requiredDeviceExtensions.data()
+	};
 
 	device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 	queue = vk::raii::Queue(device, queueIndex, 0);

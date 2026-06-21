@@ -21,19 +21,23 @@ int main() {
 	auto [w, h] = window.getFrameBufferSize();
 	Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
 
-	Buffer computeBuffer(context,
-	                     sizeof(int),
-	                     vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
-	                     vk::MemoryPropertyFlagBits::eDeviceLocal);
+	Buffer computeBuffer(
+	    context,
+	    sizeof(int),
+	    vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
+	    vk::MemoryPropertyFlagBits::eDeviceLocal
+	);
 
-	DescriptorPool descriptors(context,
-	                           pipeline,
-	                           camera.getCameraBuffer().get(),
-	                           camera.getCameraBuffer().getSize(),
-	                           particles.getSsboBuffer().get(),
-	                           particles.getSsboBuffer().getSize(),
-	                           particles.getSsboBuffer().get(),
-	                           particles.getSsboBuffer().getSize());
+	DescriptorPool descriptors(
+	    context,
+	    pipeline,
+	    camera.getCameraBuffer().get(),
+	    camera.getCameraBuffer().getSize(),
+	    particles.getSsboBuffer().get(),
+	    particles.getSsboBuffer().getSize(),
+	    particles.getSsboBuffer().get(),
+	    particles.getSsboBuffer().getSize()
+	);
 
 	Renderer renderer(context, swapChain, pipeline, descriptors, particles);
 

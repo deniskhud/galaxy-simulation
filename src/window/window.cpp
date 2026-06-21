@@ -20,9 +20,11 @@ Window::Window() {
 	if (!window) {
 		throw std::runtime_error("Failed to create SDL3 window: " + std::string(SDL_GetError()));
 	}
-	debugSystem::log(LogLevel::INFO,
-	                 "window",
-	                 "window created: width " + std::to_string(width) + ", height " + std::to_string(height));
+	debugSystem::log(
+	    LogLevel::INFO,
+	    "window",
+	    "window created: width " + std::to_string(width) + ", height " + std::to_string(height)
+	);
 }
 
 Window::~Window() {

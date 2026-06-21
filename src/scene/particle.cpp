@@ -54,5 +54,6 @@ std::vector<Particle> ParticleSystem::generateGalaxy(std::uint32_t count) {
 ParticleSystem::ParticleSystem(const VulkanContext& context, std::uint32_t count) : count(count) {
 	auto data = generateGalaxy(count);
 	ssboBuffer = std::make_unique<Buffer>(Buffer::createDeviceLocal(
-	    context, data.data(), data.size() * sizeof(Particle), vk::BufferUsageFlagBits::eStorageBuffer));
+	    context, data.data(), data.size() * sizeof(Particle), vk::BufferUsageFlagBits::eStorageBuffer
+	));
 }

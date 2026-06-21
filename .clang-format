@@ -1,21 +1,15 @@
----
 Language: Cpp
 BasedOnStyle: LLVM
-
 # margins
 IndentWidth: 4
 TabWidth: 4
-UseTab: ForIndentation 
+UseTab: ForIndentation
 ContinuationIndentWidth: 4
-
 AccessModifierOffset: -4
-
 # staples
 BreakBeforeBraces: Attach
-
 # length
 ColumnLimit: 120
-
 # spaces
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
@@ -24,33 +18,31 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
-
 # align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignTrailingComments: true
-
 # pointers / references rules
 PointerAlignment: Left
 ReferenceAlignment: Left
-
 # Includes
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
-
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
-
 BinPackArguments: false
 BinPackParameters: false
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
-
 # empty lines
 MaxEmptyLinesToKeep: 1
 KeepEmptyLinesAtTheStartOfBlocks: false
-
 # Namespaces
 NamespaceIndentation: None
 CompactNamespaces: false
+# Designated initializers & bracket alignment
+AlignAfterOpenBracket: BlockIndent
+BreakBeforeInheritanceComma: false
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon

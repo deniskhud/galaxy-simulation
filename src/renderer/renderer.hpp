@@ -10,11 +10,13 @@
 #include <chrono>
 class Renderer {
 public:
-	Renderer(const VulkanContext& context,
-	         SwapChain& swapChain,
-	         const Pipeline& pipeline,
-	         const DescriptorPool& descriptors,
-	         const ParticleSystem& particles);
+	Renderer(
+	    const VulkanContext& context,
+	    SwapChain& swapChain,
+	    const Pipeline& pipeline,
+	    const DescriptorPool& descriptors,
+	    const ParticleSystem& particles
+	);
 
 	void drawFrame();
 

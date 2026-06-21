@@ -65,9 +65,11 @@ private:
 	void pickPhysicalDevice();
 	void createLogicalDevice(const vk::raii::SurfaceKHR& surface);
 	void setupDebugMessenger();
-	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
-	                                                      vk::DebugUtilsMessageTypeFlagsEXT type,
-	                                                      const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	                                                      void* pUserData);
+	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
+	    vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+	    vk::DebugUtilsMessageTypeFlagsEXT type,
+	    const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	    void* pUserData
+	);
 };
 #endif // CONTEXT_HPP

@@ -13,8 +13,10 @@ vk::SurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(std::vector<vk::SurfaceF
 }
 
 vk::PresentModeKHR SwapChain::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes) {
-	return std::ranges::any_of(availablePresentModes,
-	                           [](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; })
+	return std::ranges::any_of(
+	           availablePresentModes,
+	           [](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; }
+	       )
 	           ? vk::PresentModeKHR::eMailbox
 	           : vk::PresentModeKHR::eFifo;
 }
@@ -24,10 +26,14 @@ vk::Extent2D SwapChain::chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& surfa
 		return surfaceCapabilities.currentExtent;
 	}
 	auto size = window.getFrameBufferSize();
-	return {std::clamp<std::uint32_t>(
-	            size.first, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
-	        std::clamp<std::uint32_t>(
-	            size.second, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)};
+	return {
+	    std::clamp<std::uint32_t>(
+	        size.first, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width
+	    ),
+	    std::clamp<std::uint32_t>(
+	        size.second, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height
+	    )
+	};
 }
 
 void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
@@ -42,19 +48,21 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
 	    context.getPhysicalDevice().getSurfacePresentModesKHR(*surface);
 	vk::PresentModeKHR presentMode = chooseSwapPresentMode(availablePresentModes);
 
-	vk::SwapchainCreateInfoKHR swapChainCreateInfo = {.surface = *surface,
-	                                                  .minImageCount = minImageCount,
-	                                                  .imageFormat = swapChainSurfaceFormat.format,
-	                                                  .imageColorSpace = swapChainSurfaceFormat.colorSpace,
-	                                                  .imageExtent = swapChainExtent,
-	                                                  .imageArrayLayers = 1,
-	                                                  .imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
-	                                                  .imageSharingMode = vk::SharingMode::eExclusive,
-	                                                  .preTransform = surfaceCapabilities.currentTransform,
-	                                                  .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-	                                                  .presentMode = vk::PresentModeKHR::eFifo,
-	                                                  .clipped = true,
-	                                                  .oldSwapchain = nullptr};
+	vk::SwapchainCreateInfoKHR swapChainCreateInfo = {
+	    .surface = *surface,
+	    .minImageCount = minImageCount,
+	    .imageFormat = swapChainSurfaceFormat.format,
+	    .imageColorSpace = swapChainSurfaceFormat.colorSpace,
+	    .imageExtent = swapChainExtent,
+	    .imageArrayLayers = 1,
+	    .imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
+	    .imageSharingMode = vk::SharingMode::eExclusive,
+	    .preTransform = surfaceCapabilities.currentTransform,
+	    .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+	    .presentMode = vk::PresentModeKHR::eFifo,
+	    .clipped = true,
+	    .oldSwapchain = nullptr
+	};
 	swapChain = vk::raii::SwapchainKHR(context.getDevice(), swapChainCreateInfo);
 	swapChainImages = swapChain.getImages();
 }
@@ -95,7 +103,8 @@ void SwapChain::createImageViews() {
 	    vk::ComponentSwizzle::eIdentity,
 	};
 	imageViewCreateInfo.subresourceRange = {
-	    .aspectMask = vk::ImageAspectFlagBits::eColor, .levelCount = 1, .layerCount = 1};
+	    .aspectMask = vk::ImageAspectFlagBits::eColor, .levelCount = 1, .layerCount = 1
+	};
 
 	for (auto& image : swapChainImages) {
 		imageViewCreateInfo.image = image;

@@ -1,10 +1,12 @@
 #include "renderer.hpp"
 
-Renderer::Renderer(const VulkanContext& context,
-                   SwapChain& swapChain,
-                   const Pipeline& pipeline,
-                   const DescriptorPool& descriptors,
-                   const ParticleSystem& particles)
+Renderer::Renderer(
+    const VulkanContext& context,
+    SwapChain& swapChain,
+    const Pipeline& pipeline,
+    const DescriptorPool& descriptors,
+    const ParticleSystem& particles
+)
     : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors), particles(particles),
       commandPool(createCommandPool()), commandBuffer(createCommandBuffer()),
       imageAvailableSemaphore(context.getDevice(), vk::SemaphoreCreateInfo{}),
@@ -30,9 +32,11 @@ vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
 }
 
 void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
-	commandBuffer.begin(vk::CommandBufferBeginInfo{
-	    .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
-	});
+	commandBuffer.begin(
+	    vk::CommandBufferBeginInfo{
+	        .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+	    }
+	);
 
 	SimParams params{
 	    .time = totalTime,
@@ -43,9 +47,11 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
 
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline.getComputePipeline());
 	commandBuffer.bindDescriptorSets(
-	    vk::PipelineBindPoint::eCompute, pipeline.getComputePipelineLayout(), 0, *descriptors.getComputeSet(), {});
+	    vk::PipelineBindPoint::eCompute, pipeline.getComputePipelineLayout(), 0, *descriptors.getComputeSet(), {}
+	);
 	commandBuffer.pushConstants<SimParams>(
-	    pipeline.getComputePipelineLayout(), vk::ShaderStageFlagBits::eCompute, 0, params);
+	    pipeline.getComputePipelineLayout(), vk::ShaderStageFlagBits::eCompute, 0, params
+	);
 
 	uint32_t groupCount = (particles.getCount() + 255) / 256;
 	commandBuffer.dispatch(groupCount, 1, 1);
@@ -60,7 +66,8 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
 	    .size = VK_WHOLE_SIZE,
 	};
 	commandBuffer.pipelineBarrier(
-	    vk::PipelineStageFlagBits::eComputeShader, vk::PipelineStageFlagBits::eVertexInput, {}, {}, ssboBarrier, {});
+	    vk::PipelineStageFlagBits::eComputeShader, vk::PipelineStageFlagBits::eVertexInput, {}, {}, ssboBarrier, {}
+	);
 
 	vk::Image image = swapChain.getImage(imageIndex);
 	vk::ImageView view = swapChain.getImageView(imageIndex);
@@ -84,12 +91,14 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
 	    .image = image,
 	    .subresourceRange = colorRange,
 	};
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe,
-	                              vk::PipelineStageFlagBits::eColorAttachmentOutput,
-	                              {},
-	                              {},
-	                              {},
-	                              toColorAttachment);
+	commandBuffer.pipelineBarrier(
+	    vk::PipelineStageFlagBits::eTopOfPipe,
+	    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+	    {},
+	    {},
+	    {},
+	    toColorAttachment
+	);
 
 	vk::ClearValue clearColor{};
 	clearColor.setColor(vk::ClearColorValue{std::array{0.00f, 0.00f, 0.00f, 1.0f}});
@@ -125,7 +134,8 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
 	commandBuffer.setScissor(0, vk::Rect2D{.offset = {0, 0}, .extent = extent});
 
 	commandBuffer.bindDescriptorSets(
-	    vk::PipelineBindPoint::eGraphics, pipeline.getPipelineLayout(), 0, *descriptors.get(), {});
+	    vk::PipelineBindPoint::eGraphics, pipeline.getPipelineLayout(), 0, *descriptors.get(), {}
+	);
 
 	commandBuffer.draw(particles.getCount(), 1, 0, 0);
 
@@ -141,12 +151,14 @@ void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
 	    .image = image,
 	    .subresourceRange = colorRange,
 	};
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput,
-	                              vk::PipelineStageFlagBits::eBottomOfPipe,
-	                              {},
-	                              {},
-	                              {},
-	                              toPresent);
+	commandBuffer.pipelineBarrier(
+	    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+	    vk::PipelineStageFlagBits::eBottomOfPipe,
+	    {},
+	    {},
+	    {},
+	    toPresent
+	);
 
 	commandBuffer.end();
 }

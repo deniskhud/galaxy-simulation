@@ -11,21 +11,25 @@ public:
 	void createDescriptorPool(uint32_t maxSets, uint32_t storageBufferCount);
 	vk::raii::DescriptorSet allocateDescriptorSet(vk::DescriptorSetLayout descriptorSetLayout);
 
-	DescriptorPool(const VulkanContext& context,
-	               const Pipeline& pipeline,
-	               vk::Buffer cameraUbo,
-	               vk::DeviceSize uboSize,
-	               vk::Buffer particleSsbo,
-	               vk::DeviceSize ssboSize);
+	DescriptorPool(
+	    const VulkanContext& context,
+	    const Pipeline& pipeline,
+	    vk::Buffer cameraUbo,
+	    vk::DeviceSize uboSize,
+	    vk::Buffer particleSsbo,
+	    vk::DeviceSize ssboSize
+	);
 
-	DescriptorPool(const VulkanContext& context,
-	               const Pipeline& pipeline,
-	               vk::Buffer cameraUbo,
-	               vk::DeviceSize uboSize,
-	               vk::Buffer particleSsbo,
-	               vk::DeviceSize ssboSize,
-	               vk::Buffer computeBuffer,
-	               vk::DeviceSize computeBufferSize);
+	DescriptorPool(
+	    const VulkanContext& context,
+	    const Pipeline& pipeline,
+	    vk::Buffer cameraUbo,
+	    vk::DeviceSize uboSize,
+	    vk::Buffer particleSsbo,
+	    vk::DeviceSize ssboSize,
+	    vk::Buffer computeBuffer,
+	    vk::DeviceSize computeBufferSize
+	);
 
 	const vk::raii::DescriptorSet& get() const { return descriptorSet; }
 	const vk::raii::DescriptorSet& getComputeSet() const { return computeDescriptorSet; }

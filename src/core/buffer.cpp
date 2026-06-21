@@ -1,9 +1,11 @@
 #include "buffer.hpp"
 
-Buffer::Buffer(const VulkanContext& context,
-               vk::DeviceSize size,
-               vk::BufferUsageFlags usageFlags,
-               vk::MemoryPropertyFlags memPropertyFlags)
+Buffer::Buffer(
+    const VulkanContext& context,
+    vk::DeviceSize size,
+    vk::BufferUsageFlags usageFlags,
+    vk::MemoryPropertyFlags memPropertyFlags
+)
     : context(context), size(size), usageFlags(usageFlags), memPropertyFlags(memPropertyFlags) {
 	buffer = createBuffer();
 	memory = allocateMemory();
@@ -49,18 +51,20 @@ void Buffer::upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize 
 	std::memcpy(static_cast<char*>(mappedPtr) + offset, data, uploadSize);
 }
 
-Buffer Buffer::createDeviceLocal(const VulkanContext& context,
-                                 const void* data,
-                                 vk::DeviceSize size,
-                                 vk::BufferUsageFlags usageFlags) {
-	Buffer staging(context,
-	               size,
-	               vk::BufferUsageFlagBits::eTransferSrc,
-	               vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+Buffer Buffer::createDeviceLocal(
+    const VulkanContext& context, const void* data, vk::DeviceSize size, vk::BufferUsageFlags usageFlags
+) {
+	Buffer staging(
+	    context,
+	    size,
+	    vk::BufferUsageFlagBits::eTransferSrc,
+	    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+	);
 	staging.upload(data, size);
 
 	Buffer deviceLocal(
-	    context, size, usageFlags | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
+	    context, size, usageFlags | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal
+	);
 
 	vk::CommandPoolCreateInfo poolInfo{
 	    .flags = vk::CommandPoolCreateFlagBits::eTransient,
