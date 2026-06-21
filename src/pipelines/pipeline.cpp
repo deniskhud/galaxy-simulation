@@ -75,12 +75,12 @@ bool Pipeline::createPipeline() {
 
 		// Create color blend attachment state
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{
-		    .blendEnable = VK_FALSE,
-		    .srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+		    .blendEnable = vk::True,
+		    .srcColorBlendFactor = vk::BlendFactor::eOne,
 		    .dstColorBlendFactor = vk::BlendFactor::eOne,
 		    .colorBlendOp = vk::BlendOp::eAdd,
 		    .srcAlphaBlendFactor = vk::BlendFactor::eOne,
-		    .dstAlphaBlendFactor = vk::BlendFactor::eZero,
+		    .dstAlphaBlendFactor = vk::BlendFactor::eOne,
 		    .alphaBlendOp = vk::BlendOp::eAdd,
 		    .colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
 		                      vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA

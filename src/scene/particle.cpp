@@ -3,6 +3,37 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
+
+glm::vec3 blackbodyColor(float kelvin) {
+	float temp = kelvin / 100.0f;
+	float r, g, b;
+
+	// Red
+	if (temp <= 66.0f) {
+		r = 255.0f;
+	} else {
+		r = 329.698727446f * std::pow(temp - 60.0f, -0.1332047592f);
+	}
+
+	// Green
+	if (temp <= 66.0f) {
+		g = 99.4708025861f * std::log(temp) - 161.1195681661f;
+	} else {
+		g = 288.1221695283f * std::pow(temp - 60.0f, -0.0755148492f);
+	}
+
+	// Blue
+	if (temp >= 66.0f) {
+		b = 255.0f;
+	} else if (temp <= 19.0f) {
+		b = 0.0f;
+	} else {
+		b = 138.5177312231f * std::log(temp - 10.0f) - 305.0447927307f;
+	}
+
+	return glm::clamp(glm::vec3(r, g, b) / 255.0f, glm::vec3(0.0f), glm::vec3(1.0f));
+}
+
 std::vector<Particle> ParticleSystem::generateGalaxy(std::uint32_t count) {
 	std::vector<Particle> particles(count);
 	std::mt19937 rng(42);
@@ -10,8 +41,9 @@ std::vector<Particle> ParticleSystem::generateGalaxy(std::uint32_t count) {
 	std::uniform_real_distribution<float> radiusDist(0.0f, 1.0f);
 	std::uniform_real_distribution<float> heightDist(-1.0f, 1.0f);
 	std::uniform_real_distribution<float> anomalyDist(0.0f, 2.0f * kPi);
+	std::uniform_real_distribution<float> tempDist(3000.0f, 9000.0f);
 
-	constexpr float armCount = 2.0f;
+	constexpr float armCount = 3.0f;
 	constexpr float armTwist = 4.0f;
 	constexpr float galaxyRadius = 12.0f;
 	constexpr float diskThickness = 0.30f;
@@ -43,10 +75,15 @@ std::vector<Particle> ParticleSystem::generateGalaxy(std::uint32_t count) {
 		particles[i].position = glm::vec4(x, y, z, 1.0f);
 		particles[i].orbit = glm::vec4(a, eccentricity, tilt, anomaly);
 
-		glm::vec3 coreColor(1.0f, 0.9f, 0.6f);
+		float temperature = tempDist(rng);
+		glm::vec3 rgb = blackbodyColor(temperature);
+		float luminosity = std::pow(temperature / 9000.0f, 4.0f); // Stefan-Boltzmann, нормировано
+		particles[i].color = glm::vec4(rgb, luminosity);
+
+		/*glm::vec3 coreColor(1.0f, 0.9f, 0.6f);
 		glm::vec3 edgeColor(0.4f, 0.6f, 1.0f);
 		glm::vec3 color = glm::mix(coreColor, edgeColor, t);
-		particles[i].color = glm::vec4(color, 1.0f);
+		particles[i].color = glm::vec4(color, 1.0f);*/
 	}
 	return particles;
 }

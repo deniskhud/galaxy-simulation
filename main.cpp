@@ -16,7 +16,7 @@ int main() {
 
 	Pipeline pipeline(context, swapChain);
 
-	ParticleSystem particles(context, 15000);
+	ParticleSystem particles(context, 18000);
 
 	auto [w, h] = window.getFrameBufferSize();
 	Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
