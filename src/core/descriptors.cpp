@@ -84,6 +84,7 @@ void DescriptorPool::createDescriptorPool(uint32_t maxSets, uint32_t storageBuff
 	    {vk::DescriptorType::eStorageBuffer, storageBufferCount},
 	}};
 	vk::DescriptorPoolCreateInfo poolInfo{
+		.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
 	    .maxSets = maxSets,
 	    .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
 	    .pPoolSizes = poolSizes.data(),

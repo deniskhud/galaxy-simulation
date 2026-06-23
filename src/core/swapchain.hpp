@@ -13,8 +13,10 @@ public:
 	const vk::Extent2D& getExtent() const;
 	const vk::raii::ImageView& getImageView(std::uint32_t index) const;
 	const vk::Image& getImage(std::uint32_t index) const;
-	void recreateSwapChain();
+	const size_t getSwapChainImageCount() const;
 
+
+	void recreateSwapChain();
 private:
 	const VulkanContext& context;
 	const Window& window;

@@ -43,9 +43,9 @@ std::vector<Particle> ParticleSystem::generateGalaxy(std::uint32_t count) {
 	std::uniform_real_distribution<float> anomalyDist(0.0f, 2.0f * kPi);
 	std::uniform_real_distribution<float> tempDist(3000.0f, 9000.0f);
 
-	constexpr float armCount = 3.0f;
+	constexpr float armCount = 2.0f;
 	constexpr float armTwist = 4.0f;
-	constexpr float galaxyRadius = 12.0f;
+	constexpr float galaxyRadius = 20.0f;
 	constexpr float diskThickness = 0.30f;
 	constexpr float maxEccentricity = 0.6f; // насколько вытянут эллипс в середине диска
 

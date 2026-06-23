@@ -24,9 +24,17 @@ private:
 	std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
 	float totalTime = 0.0f;
 
+	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+	std::uint32_t frameIndex = 0;
+
 	vk::raii::CommandPool createCommandPool() const;
 	vk::raii::CommandBuffer createCommandBuffer() const;
-	void recordCommandBuffer(uint32_t imageIndex, float deltaTime);
+	void recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer, uint32_t imageIndex, float deltaTime);
+
+	void createCommandBuffers();
+	std::vector<vk::raii::Semaphore> createRenderFinishedSemaphores();
+	std::vector<vk::raii::Semaphore>  createImageAvailableSemaphores();
+	std::vector<vk::raii::Fence> createInFlightFences();
 
 	const VulkanContext& context;
 	SwapChain& swapChain;
@@ -35,11 +43,16 @@ private:
 	const ParticleSystem& particles;
 
 	vk::raii::CommandPool commandPool = nullptr;
-	vk::raii::CommandBuffer commandBuffer = nullptr;
+	//vk::raii::CommandBuffer commandBuffer = nullptr;
+	std::vector<vk::raii::CommandBuffer> commandBuffers;
 
 	vk::raii::Semaphore imageAvailableSemaphore = nullptr;
+	std::vector<vk::raii::Semaphore> imageAvailableSemaphores;
+
+	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
 	vk::raii::Semaphore renderFinishedSemaphore = nullptr;
 	vk::raii::Fence inFlightFence = nullptr;
+	std::vector<vk::raii::Fence> inFlightFences;
 };
 
 #endif // GALACTIC_RENDERER_HPP

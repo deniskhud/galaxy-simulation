@@ -33,7 +33,7 @@ private:
 	float fovYDegrees = 90.0f;
 	float aspectRatio{16.0 / 9.0};
 	float nearPlane = 0.1f;
-	float farPlane = 100.0f;
+	float farPlane = 1000.0f;
 
 	std::unique_ptr<Buffer> cameraUboBuffer;
 };

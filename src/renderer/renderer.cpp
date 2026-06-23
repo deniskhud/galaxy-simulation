@@ -8,10 +8,16 @@ Renderer::Renderer(
     const ParticleSystem& particles
 )
     : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors), particles(particles),
-      commandPool(createCommandPool()), commandBuffer(createCommandBuffer()),
+      commandPool(createCommandPool()),
       imageAvailableSemaphore(context.getDevice(), vk::SemaphoreCreateInfo{}),
       renderFinishedSemaphore(context.getDevice(), vk::SemaphoreCreateInfo{}),
-      inFlightFence(context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}) {}
+      inFlightFence(context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}) {
+
+	renderFinishedSemaphores = createRenderFinishedSemaphores();
+	imageAvailableSemaphores = createImageAvailableSemaphores();
+	inFlightFences = createInFlightFences();
+	createCommandBuffers();
+}
 
 vk::raii::CommandPool Renderer::createCommandPool() const {
 	vk::CommandPoolCreateInfo poolInfo{
@@ -31,7 +37,17 @@ vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
 	return std::move(buffers.front());
 }
 
-void Renderer::recordCommandBuffer(uint32_t imageIndex, float deltaTime) {
+void Renderer::createCommandBuffers() {
+	vk::CommandBufferAllocateInfo allocInfo{
+		.commandPool = *commandPool,
+		.level = vk::CommandBufferLevel::ePrimary,
+		.commandBufferCount = MAX_FRAMES_IN_FLIGHT,
+	};
+	commandBuffers = vk::raii::CommandBuffers( context.getDevice(), allocInfo );
+}
+
+
+void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer, uint32_t imageIndex, float deltaTime) {
 	commandBuffer.begin(
 	    vk::CommandBufferBeginInfo{
 	        .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
@@ -168,38 +184,64 @@ void Renderer::drawFrame() {
 	float deltaTime = std::chrono::duration<float>(now - lastFrameTime).count();
 	lastFrameTime = now;
 	totalTime += deltaTime;
-
-	[[maybe_unused]] auto waitResult = context.getDevice().waitForFences(*inFlightFence, VK_TRUE, UINT64_MAX);
-	context.getDevice().resetFences(*inFlightFence);
+	//ждем результат и сбрасываем сигнал
+	[[maybe_unused]] auto waitResult = context.getDevice().waitForFences(*inFlightFences[frameIndex], VK_TRUE, UINT64_MAX);
+	context.getDevice().resetFences(*inFlightFences[frameIndex]);
 
 	auto [result, imageIndex] =
-	    swapChain.getSwapchain().acquireNextImage(UINT64_MAX, *imageAvailableSemaphore, nullptr);
-
+	    swapChain.getSwapchain().acquireNextImage(UINT64_MAX, *imageAvailableSemaphores[frameIndex], nullptr);
+	// new func
 	if (result == vk::Result::eErrorOutOfDateKHR) {
 		swapChain.recreateSwapChain();
 		return;
 	}
-	commandBuffer.reset();
-	recordCommandBuffer(imageIndex, deltaTime);
+	commandBuffers[frameIndex].reset();
+	recordCommandBuffer(commandBuffers[frameIndex], imageIndex, deltaTime);
 
 	vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 	vk::SubmitInfo submitInfo{
 	    .waitSemaphoreCount = 1,
-	    .pWaitSemaphores = &*imageAvailableSemaphore,
+	    .pWaitSemaphores = &*imageAvailableSemaphores[frameIndex],
 	    .pWaitDstStageMask = &waitStage,
 	    .commandBufferCount = 1,
-	    .pCommandBuffers = &*commandBuffer,
+	    .pCommandBuffers = &*commandBuffers[frameIndex],
 	    .signalSemaphoreCount = 1,
-	    .pSignalSemaphores = &*renderFinishedSemaphore,
+	    .pSignalSemaphores = &*renderFinishedSemaphores[imageIndex],
 	};
-	context.getGraphicsQueue().submit(submitInfo, *inFlightFence);
+
+	context.getGraphicsQueue().submit(submitInfo, *inFlightFences[frameIndex]);
 
 	vk::PresentInfoKHR presentInfo{
 	    .waitSemaphoreCount = 1,
-	    .pWaitSemaphores = &*renderFinishedSemaphore,
+	    .pWaitSemaphores = &*renderFinishedSemaphores[imageIndex],
 	    .swapchainCount = 1,
 	    .pSwapchains = &*swapChain.getSwapchain(),
 	    .pImageIndices = &imageIndex,
 	};
 	[[maybe_unused]] auto presentResult = context.getPresentQueue().presentKHR(presentInfo);
+	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+std::vector<vk::raii::Semaphore> Renderer::createRenderFinishedSemaphores() {
+	std::vector<vk::raii::Semaphore> result{};
+	for (size_t i = 0; i < swapChain.getSwapChainImageCount(); ++i) {
+		result.emplace_back(vk::raii::Semaphore{context.getDevice(), vk::SemaphoreCreateInfo{}});
+	}
+	return result;
+}
+
+std::vector<vk::raii::Semaphore> Renderer::createImageAvailableSemaphores() {
+	std::vector<vk::raii::Semaphore> result{};
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		result.emplace_back(vk::raii::Semaphore{context.getDevice(), vk::SemaphoreCreateInfo{}});
+	}
+	return result;
+}
+
+std::vector<vk::raii::Fence> Renderer::createInFlightFences() {
+	std::vector<vk::raii::Fence> result{};
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		result.emplace_back(vk::raii::Fence{context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}});
+	}
+	return result;
 }

@@ -128,3 +128,7 @@ const vk::raii::ImageView& SwapChain::getImageView(std::uint32_t index) const {
 const vk::Image& SwapChain::getImage(std::uint32_t index) const {
 	return swapChainImages.at(index);
 }
+
+const size_t SwapChain::getSwapChainImageCount() const {
+	return swapChainImages.size();
+}
