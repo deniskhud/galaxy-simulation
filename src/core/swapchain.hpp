@@ -14,9 +14,10 @@ public:
 	const vk::raii::ImageView& getImageView(std::uint32_t index) const;
 	const vk::Image& getImage(std::uint32_t index) const;
 	const size_t getSwapChainImageCount() const;
-
+	vk::Format getColorFormat() const { return swapChainSurfaceFormat.format; }
 
 	void recreateSwapChain();
+
 private:
 	const VulkanContext& context;
 	const Window& window;

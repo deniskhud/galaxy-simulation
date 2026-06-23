@@ -9,7 +9,7 @@ include(FetchContent)
 FetchContent_Declare(
         imgui
         GIT_REPOSITORY https://github.com/ocornut/imgui.git
-        GIT_TAG docking
+        GIT_TAG v1.92.8
 )
 
 FetchContent_MakeAvailable(imgui)
@@ -66,6 +66,8 @@ add_executable(galactic main.cpp
         src/debugSystem.hpp
         src/engine/engine.hpp
         src/engine/engine.cpp
+        src/gui/imguiSystem.hpp
+        src/gui/imguiSystem.cpp
 
 )
 

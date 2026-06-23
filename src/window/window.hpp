@@ -10,12 +10,6 @@
 #include <vulkan/vulkan_raii.hpp>
 
 class Window final {
-private:
-	int width{}, height{};
-	SDL_Window* window = nullptr;
-
-	bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
-
 public:
 	/**
 	 * Creates Vulkan surface for the SDL window.
@@ -28,7 +22,9 @@ public:
 	 */
 	[[nodiscard]] vk::raii::SurfaceKHR createSurface(const vk::raii::Instance& instance) const;
 	[[nodiscard]] std::vector<const char*> getRequiredInstanceExtensions() const;
+	SDL_Window* getWindow() { return window; }
 
+	std::uint32_t getFrameRate();
 	/*
 	 * @return {width, height}
 	 */
@@ -36,5 +32,16 @@ public:
 	bool framebufferResized = false;
 	Window();
 	~Window();
+
+	double calculateFrameRate();
+
+private:
+	int width{}, height{};
+	SDL_Window* window = nullptr;
+
+	bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
+
+	Uint64 prev = SDL_GetPerformanceCounter();
+	double freq = static_cast<double>(SDL_GetPerformanceFrequency());
 };
 #endif // WINDOW_HPP

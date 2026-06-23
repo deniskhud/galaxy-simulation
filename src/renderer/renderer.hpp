@@ -4,6 +4,7 @@
 #include "../core/context.hpp"
 #include "../core/descriptors.hpp"
 #include "../core/swapchain.hpp"
+#include "../gui/imguiSystem.hpp"
 #include "../pipelines/pipeline.hpp"
 #include "../scene/particle.hpp"
 
@@ -15,7 +16,8 @@ public:
 	    SwapChain& swapChain,
 	    const Pipeline& pipeline,
 	    const DescriptorPool& descriptors,
-	    const ParticleSystem& particles
+	    const ParticleSystem& particles,
+	    ImguiSystem& imguiSystem
 	);
 
 	void drawFrame();
@@ -33,7 +35,7 @@ private:
 
 	std::vector<vk::raii::CommandBuffer> createCommandBuffers();
 	std::vector<vk::raii::Semaphore> createRenderFinishedSemaphores();
-	std::vector<vk::raii::Semaphore>  createImageAvailableSemaphores();
+	std::vector<vk::raii::Semaphore> createImageAvailableSemaphores();
 	std::vector<vk::raii::Fence> createInFlightFences();
 
 	const VulkanContext& context;
@@ -41,6 +43,7 @@ private:
 	const Pipeline& pipeline;
 	const DescriptorPool& descriptors;
 	const ParticleSystem& particles;
+	ImguiSystem& imguiSystem;
 
 	vk::raii::CommandPool commandPool = nullptr;
 	std::vector<vk::raii::CommandBuffer> commandBuffers;

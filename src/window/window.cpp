@@ -65,3 +65,12 @@ std::pair<int, int> Window::getFrameBufferSize() const {
 	SDL_GetWindowSizeInPixels(window, &w, &h);
 	return {w, h};
 }
+
+double Window::calculateFrameRate() {
+	Uint64 now = SDL_GetPerformanceCounter();
+	double dt = (double)(now - prev) / freq;
+	prev = now;
+
+	double fps = 1.0 / dt;
+	return fps;
+}

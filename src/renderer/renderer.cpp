@@ -1,10 +1,15 @@
 #include "renderer.hpp"
 
-Renderer::Renderer(const VulkanContext& context,SwapChain& swapChain, const Pipeline& pipeline,
-	const DescriptorPool& descriptors, const ParticleSystem& particles)
-    : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors),
-		particles(particles),commandPool(createCommandPool())
-{
+Renderer::Renderer(
+    const VulkanContext& context,
+    SwapChain& swapChain,
+    const Pipeline& pipeline,
+    const DescriptorPool& descriptors,
+    const ParticleSystem& particles,
+    ImguiSystem& imguiSystem
+)
+    : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors), particles(particles),
+      imguiSystem(imguiSystem), commandPool(createCommandPool()) {
 	renderFinishedSemaphores = createRenderFinishedSemaphores();
 	imageAvailableSemaphores = createImageAvailableSemaphores();
 	inFlightFences = createInFlightFences();
@@ -31,13 +36,12 @@ vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
 
 std::vector<vk::raii::CommandBuffer> Renderer::createCommandBuffers() {
 	vk::CommandBufferAllocateInfo allocInfo{
-		.commandPool = *commandPool,
-		.level = vk::CommandBufferLevel::ePrimary,
-		.commandBufferCount = MAX_FRAMES_IN_FLIGHT,
+	    .commandPool = *commandPool,
+	    .level = vk::CommandBufferLevel::ePrimary,
+	    .commandBufferCount = MAX_FRAMES_IN_FLIGHT,
 	};
-	return vk::raii::CommandBuffers( context.getDevice(), allocInfo );
+	return vk::raii::CommandBuffers(context.getDevice(), allocInfo);
 }
-
 
 void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer, uint32_t imageIndex, float deltaTime) {
 	commandBuffer.begin(
@@ -147,6 +151,8 @@ void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer,
 
 	commandBuffer.draw(particles.getCount(), 1, 0, 0);
 
+	imguiSystem.render(commandBuffer);
+
 	commandBuffer.endRendering();
 
 	vk::ImageMemoryBarrier toPresent{
@@ -176,8 +182,9 @@ void Renderer::drawFrame() {
 	float deltaTime = std::chrono::duration<float>(now - lastFrameTime).count();
 	lastFrameTime = now;
 	totalTime += deltaTime;
-	//ждем результат и сбрасываем сигнал
-	[[maybe_unused]] auto waitResult = context.getDevice().waitForFences(*inFlightFences[frameIndex], VK_TRUE, UINT64_MAX);
+	// ждем результат и сбрасываем сигнал
+	[[maybe_unused]] auto waitResult =
+	    context.getDevice().waitForFences(*inFlightFences[frameIndex], VK_TRUE, UINT64_MAX);
 	context.getDevice().resetFences(*inFlightFences[frameIndex]);
 
 	auto [result, imageIndex] =
@@ -233,7 +240,9 @@ std::vector<vk::raii::Semaphore> Renderer::createImageAvailableSemaphores() {
 std::vector<vk::raii::Fence> Renderer::createInFlightFences() {
 	std::vector<vk::raii::Fence> result{};
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-		result.emplace_back(vk::raii::Fence{context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}});
+		result.emplace_back(
+		    vk::raii::Fence{context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}}
+		);
 	}
 	return result;
 }
