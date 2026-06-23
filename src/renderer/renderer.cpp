@@ -1,22 +1,14 @@
 #include "renderer.hpp"
 
-Renderer::Renderer(
-    const VulkanContext& context,
-    SwapChain& swapChain,
-    const Pipeline& pipeline,
-    const DescriptorPool& descriptors,
-    const ParticleSystem& particles
-)
-    : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors), particles(particles),
-      commandPool(createCommandPool()),
-      imageAvailableSemaphore(context.getDevice(), vk::SemaphoreCreateInfo{}),
-      renderFinishedSemaphore(context.getDevice(), vk::SemaphoreCreateInfo{}),
-      inFlightFence(context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}) {
-
+Renderer::Renderer(const VulkanContext& context,SwapChain& swapChain, const Pipeline& pipeline,
+	const DescriptorPool& descriptors, const ParticleSystem& particles)
+    : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors),
+		particles(particles),commandPool(createCommandPool())
+{
 	renderFinishedSemaphores = createRenderFinishedSemaphores();
 	imageAvailableSemaphores = createImageAvailableSemaphores();
 	inFlightFences = createInFlightFences();
-	createCommandBuffers();
+	commandBuffers = createCommandBuffers();
 }
 
 vk::raii::CommandPool Renderer::createCommandPool() const {
@@ -37,13 +29,13 @@ vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
 	return std::move(buffers.front());
 }
 
-void Renderer::createCommandBuffers() {
+std::vector<vk::raii::CommandBuffer> Renderer::createCommandBuffers() {
 	vk::CommandBufferAllocateInfo allocInfo{
 		.commandPool = *commandPool,
 		.level = vk::CommandBufferLevel::ePrimary,
 		.commandBufferCount = MAX_FRAMES_IN_FLIGHT,
 	};
-	commandBuffers = vk::raii::CommandBuffers( context.getDevice(), allocInfo );
+	return vk::raii::CommandBuffers( context.getDevice(), allocInfo );
 }
 
 

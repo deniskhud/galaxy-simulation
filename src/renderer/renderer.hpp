@@ -31,7 +31,7 @@ private:
 	vk::raii::CommandBuffer createCommandBuffer() const;
 	void recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer, uint32_t imageIndex, float deltaTime);
 
-	void createCommandBuffers();
+	std::vector<vk::raii::CommandBuffer> createCommandBuffers();
 	std::vector<vk::raii::Semaphore> createRenderFinishedSemaphores();
 	std::vector<vk::raii::Semaphore>  createImageAvailableSemaphores();
 	std::vector<vk::raii::Fence> createInFlightFences();
@@ -43,15 +43,9 @@ private:
 	const ParticleSystem& particles;
 
 	vk::raii::CommandPool commandPool = nullptr;
-	//vk::raii::CommandBuffer commandBuffer = nullptr;
 	std::vector<vk::raii::CommandBuffer> commandBuffers;
-
-	vk::raii::Semaphore imageAvailableSemaphore = nullptr;
 	std::vector<vk::raii::Semaphore> imageAvailableSemaphores;
-
 	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
-	vk::raii::Semaphore renderFinishedSemaphore = nullptr;
-	vk::raii::Fence inFlightFence = nullptr;
 	std::vector<vk::raii::Fence> inFlightFences;
 };
 
