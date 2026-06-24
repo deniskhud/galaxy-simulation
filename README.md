@@ -7,6 +7,8 @@
 
 A real-time galaxy simulation engine built with Vulkan, featuring millions of particles driven entirely by compute shaders.
 
+<video src="https://github.com/user-attachments/assets/ef93a809-f790-4dc5-a41e-c4a664995266" controls width="100%"></video>
+![screenshot](https://github.com/user-attachments/assets/37305025-dbfc-438e-b4e1-91e712240f76)
 
 # Features
  
