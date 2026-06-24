@@ -34,6 +34,9 @@ public:
 	const vk::raii::DescriptorSet& get() const { return descriptorSet; }
 	const vk::raii::DescriptorSet& getComputeSet() const { return computeDescriptorSet; }
 
+	void updateComputeSet(vk::Buffer newSsbo, vk::DeviceSize size);
+	void updateGraphicsSet(vk::Buffer newSsbo, vk::DeviceSize size);
+
 private:
 	vk::raii::DescriptorPool descriptorPool = nullptr;
 	vk::raii::DescriptorSet descriptorSet = nullptr;

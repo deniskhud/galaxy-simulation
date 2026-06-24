@@ -42,5 +42,5 @@ void Camera::rotate(float dyaw, float dpitch) {
 
 void Camera::zoom(float delta) {
 	distance -= delta;
-	distance = glm::clamp(distance, 3.0f, 100.0f);
+	distance = glm::clamp(distance, 3.0f, 200.0f);
 }

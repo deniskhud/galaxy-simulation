@@ -4,8 +4,8 @@ Renderer::Renderer(
     const VulkanContext& context,
     SwapChain& swapChain,
     const Pipeline& pipeline,
-    const DescriptorPool& descriptors,
-    const ParticleSystem& particles,
+    DescriptorPool& descriptors,
+    ParticleSystem& particles,
     ImguiSystem& imguiSystem
 )
     : context(context), swapChain(swapChain), pipeline(pipeline), descriptors(descriptors), particles(particles),
@@ -14,6 +14,7 @@ Renderer::Renderer(
 	imageAvailableSemaphores = createImageAvailableSemaphores();
 	inFlightFences = createInFlightFences();
 	commandBuffers = createCommandBuffers();
+	// reinitParticles();
 }
 
 vk::raii::CommandPool Renderer::createCommandPool() const {
@@ -22,16 +23,6 @@ vk::raii::CommandPool Renderer::createCommandPool() const {
 	    .queueFamilyIndex = context.getGraphicsQueueFamilyIndex(),
 	};
 	return vk::raii::CommandPool(context.getDevice(), poolInfo);
-}
-
-vk::raii::CommandBuffer Renderer::createCommandBuffer() const {
-	vk::CommandBufferAllocateInfo allocInfo{
-	    .commandPool = *commandPool,
-	    .level = vk::CommandBufferLevel::ePrimary,
-	    .commandBufferCount = 1,
-	};
-	auto buffers = context.getDevice().allocateCommandBuffers(allocInfo);
-	return std::move(buffers.front());
 }
 
 std::vector<vk::raii::CommandBuffer> Renderer::createCommandBuffers() {
@@ -50,10 +41,53 @@ void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer,
 	    }
 	);
 
+	if (needsReinit) {
+		InitParams initParams{
+		    .particleCount = particles.getCount(),
+		    .seed = 42u,
+		    .galaxyRadius = galaxyParams.galaxyRadius,
+		    .diskThickness = galaxyParams.diskThickness,
+		    .maxEccentricity = galaxyParams.maxEccentricity,
+		    .armCount = static_cast<float>(galaxyParams.armCount),
+		    .armTwist = galaxyParams.armTwist,
+		    .pad = 0.0f,
+		};
+
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline.getInitComputePipeline());
+		commandBuffer.bindDescriptorSets(
+		    vk::PipelineBindPoint::eCompute, pipeline.getInitPipelineLayout(), 0, *descriptors.getComputeSet(), {}
+		);
+		commandBuffer.pushConstants<InitParams>(
+		    pipeline.getInitPipelineLayout(), vk::ShaderStageFlagBits::eCompute, 0, initParams
+		);
+		commandBuffer.dispatch((particles.getCount() + 255) / 256, 1, 1);
+
+		// барьер: init завершился → sim может читать
+		vk::BufferMemoryBarrier initBarrier{
+		    .srcAccessMask = vk::AccessFlagBits::eShaderWrite,
+		    .dstAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite,
+		    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		    .buffer = particles.getSsboBuffer().get(),
+		    .offset = 0,
+		    .size = VK_WHOLE_SIZE,
+		};
+		commandBuffer.pipelineBarrier(
+		    vk::PipelineStageFlagBits::eComputeShader,
+		    vk::PipelineStageFlagBits::eComputeShader,
+		    {},
+		    {},
+		    initBarrier,
+		    {}
+		);
+
+		needsReinit = false;
+	}
+
 	SimParams params{
 	    .time = totalTime,
-	    .maxOrbitalSpeed = 0.7f,
-	    .coreRadius = 0.4f,
+	    .maxOrbitalSpeed = galaxyParams.maxOrbitalSpeed,
+	    .coreRadius = galaxyParams.coreRadius,
 	    .particleCount = particles.getCount(),
 	};
 
@@ -245,4 +279,15 @@ std::vector<vk::raii::Fence> Renderer::createInFlightFences() {
 		);
 	}
 	return result;
+}
+
+void Renderer::reinitParticles(GalaxyParams& p) {
+	context.getDevice().waitIdle();
+
+	particles.resizeBuffer(context, p.particleCount);
+	descriptors.updateComputeSet(particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
+	descriptors.updateGraphicsSet(particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
+
+	galaxyParams = p;
+	needsReinit = true;
 }

@@ -12,12 +12,25 @@ struct alignas(16) Particle {
 	glm::vec4 orbit;
 };
 
+struct InitParams {
+	std::uint32_t particleCount;
+	std::uint32_t seed;
+	float galaxyRadius;
+	float diskThickness;
+	float maxEccentricity;
+	float armCount;
+	float armTwist;
+	float pad;
+};
+
 class ParticleSystem {
 public:
 	ParticleSystem(const VulkanContext& context, std::uint32_t count);
 
 	const Buffer& getSsboBuffer() const { return *ssboBuffer; }
 	std::uint32_t getCount() const { return count; }
+
+	void resizeBuffer(const VulkanContext& context, const std::uint32_t newSize);
 
 private:
 	static std::vector<Particle> generateGalaxy(std::uint32_t count);

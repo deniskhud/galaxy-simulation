@@ -9,18 +9,33 @@
 #include "../scene/particle.hpp"
 
 #include <chrono>
+
+struct GalaxyParams {
+	float galaxyRadius = 20.0f;
+	float diskThickness = 0.30f;
+	float maxEccentricity = 0.6f;
+	int armCount = 2.0f;
+	float armTwist = 4.0f;
+	float maxOrbitalSpeed = 0.7f;
+	float coreRadius = 0.4f;
+	int particleCount = 20000;
+};
+
 class Renderer {
 public:
 	Renderer(
 	    const VulkanContext& context,
 	    SwapChain& swapChain,
 	    const Pipeline& pipeline,
-	    const DescriptorPool& descriptors,
-	    const ParticleSystem& particles,
+	    DescriptorPool& descriptors,
+	    ParticleSystem& particles,
 	    ImguiSystem& imguiSystem
 	);
 
 	void drawFrame();
+
+	void reinitParticles(GalaxyParams& galaxyParams);
+	void setGalaxyParams(const GalaxyParams& p) { galaxyParams = p; }
 
 private:
 	std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
@@ -29,8 +44,10 @@ private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 	std::uint32_t frameIndex = 0;
 
+	GalaxyParams galaxyParams{};
+
 	vk::raii::CommandPool createCommandPool() const;
-	vk::raii::CommandBuffer createCommandBuffer() const;
+
 	void recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer, uint32_t imageIndex, float deltaTime);
 
 	std::vector<vk::raii::CommandBuffer> createCommandBuffers();
@@ -41,8 +58,8 @@ private:
 	const VulkanContext& context;
 	SwapChain& swapChain;
 	const Pipeline& pipeline;
-	const DescriptorPool& descriptors;
-	const ParticleSystem& particles;
+	DescriptorPool& descriptors;
+	ParticleSystem& particles;
 	ImguiSystem& imguiSystem;
 
 	vk::raii::CommandPool commandPool = nullptr;
@@ -50,6 +67,11 @@ private:
 	std::vector<vk::raii::Semaphore> imageAvailableSemaphores;
 	std::vector<vk::raii::Semaphore> renderFinishedSemaphores;
 	std::vector<vk::raii::Fence> inFlightFences;
+
+	vk::raii::CommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(const vk::raii::CommandBuffer& cmd);
+
+	bool needsReinit{true};
 };
 
 #endif // GALACTIC_RENDERER_HPP

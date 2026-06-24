@@ -3,9 +3,9 @@
 
 #include "../core/context.hpp"
 #include "../core/swapchain.hpp"
+#include "../scene/particle.hpp"
 
 #include <fstream>
-
 struct SimParams {
 	float time;
 	float maxOrbitalSpeed;
@@ -25,6 +25,9 @@ public:
 	const vk::raii::PipelineLayout& getComputePipelineLayout() const;
 	const vk::raii::Pipeline& getComputePipeline() const;
 
+	const vk::raii::Pipeline& getInitComputePipeline() const;
+	const vk::raii::PipelineLayout& getInitPipelineLayout() const;
+
 private:
 	const VulkanContext& context;
 	const SwapChain& swapChain;
@@ -38,8 +41,14 @@ private:
 	vk::raii::PipelineLayout computePipelineLayout = nullptr;
 	vk::raii::DescriptorSetLayout computeDescriptorSetLayout = nullptr;
 
+	// galaxy init pipeline
+	vk::raii::Pipeline initComputePipeline = nullptr;
+	vk::raii::PipelineLayout initComputePipelineLayout = nullptr;
+	// vk::raii::DescriptorSetLayout initComputeDescriptorSetLayout = nullptr;
+
 	bool createPipeline();
 	bool createComputePipeline();
+	bool createInitComputePipeline();
 
 	[[nodiscard]] static std::vector<char> readShaderFile(const std::string& filename);
 	[[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector<char>& code) const;

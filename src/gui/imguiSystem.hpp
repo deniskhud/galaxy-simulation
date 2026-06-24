@@ -19,7 +19,7 @@ public:
 	    vk::Format colorFormat,
 	    SDL_Window* window
 	);
-	
+
 	~ImguiSystem();
 
 	void processEvent(const SDL_Event& event);

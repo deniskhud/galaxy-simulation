@@ -4,6 +4,7 @@ Pipeline::Pipeline(const VulkanContext& context, const SwapChain& swapChain) : c
 	createDescriptorSetLayout();
 	createPipeline();
 	createComputePipeline();
+	createInitComputePipeline();
 }
 
 bool Pipeline::createPipeline() {
@@ -262,6 +263,44 @@ bool Pipeline::createComputePipeline() {
 	}
 }
 
+bool Pipeline::createInitComputePipeline() {
+	try {
+		auto shaderCode = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/computeInit.spv");
+		auto spv = createShaderModule(shaderCode);
+
+		vk::PipelineShaderStageCreateInfo shaderStageInfo{
+		    .stage = vk::ShaderStageFlagBits::eCompute, .module = *spv, .pName = "main"
+		};
+
+		vk::PushConstantRange pushConstantRange{
+		    .stageFlags = vk::ShaderStageFlagBits::eCompute,
+		    .offset = 0,
+		    .size = sizeof(InitParams),
+		};
+
+		vk::PipelineLayoutCreateInfo layoutInfo{
+		    .setLayoutCount = 1,
+		    .pSetLayouts = &*computeDescriptorSetLayout,
+		    .pushConstantRangeCount = 1,
+		    .pPushConstantRanges = &pushConstantRange
+		};
+
+		initComputePipelineLayout = vk::raii::PipelineLayout(context.getDevice(), layoutInfo);
+
+		vk::ComputePipelineCreateInfo computePipelineInfo{
+		    .stage = shaderStageInfo,
+		    .layout = *initComputePipelineLayout,
+		};
+
+		initComputePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
+
+		return true;
+	} catch (const std::exception& e) {
+		std::cerr << "Failed to create init pipeline: " << e.what() << std::endl;
+		return false;
+	}
+}
+
 /*** getters ***/
 const vk::raii::DescriptorSetLayout& Pipeline::getDescriptorSetLayout() const {
 	return descriptorSetLayout;
@@ -280,4 +319,12 @@ const vk::raii::PipelineLayout& Pipeline::getComputePipelineLayout() const {
 }
 const vk::raii::Pipeline& Pipeline::getComputePipeline() const {
 	return computePipeline;
+}
+
+const vk::raii::Pipeline& Pipeline::getInitComputePipeline() const {
+	return initComputePipeline;
+}
+
+const vk::raii::PipelineLayout& Pipeline::getInitPipelineLayout() const {
+	return initComputePipelineLayout;
 }

@@ -10,6 +10,7 @@
 #include "src/window/window.hpp"
 
 int main() {
+	GalaxyParams galaxyParams;
 	Window window{};
 	VulkanContext context(window);
 
@@ -17,18 +18,17 @@ int main() {
 
 	Pipeline pipeline(context, swapChain);
 
-	int particlesCount = 20000;
-	ParticleSystem particles(context, particlesCount);
+	ParticleSystem particles(context, static_cast<uint32_t>(galaxyParams.particleCount));
 
 	auto [w, h] = window.getFrameBufferSize();
 	Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
 
-	Buffer computeBuffer(
+	/*Buffer computeBuffer(
 	    context,
 	    sizeof(int),
 	    vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
 	    vk::MemoryPropertyFlagBits::eDeviceLocal
-	);
+	);*/
 
 	DescriptorPool descriptors(
 	    context,
@@ -53,6 +53,8 @@ int main() {
 	);
 
 	Renderer renderer(context, swapChain, pipeline, descriptors, particles, imguiSystem);
+	renderer.setGalaxyParams(galaxyParams);
+
 	SDL_Event e;
 	float lastX = 0.0f;
 	float lastY = 0.0f;
@@ -97,12 +99,35 @@ int main() {
 		}
 
 		imguiSystem.beginFrame();
-		ImGui::Begin("Debug");
-		ImGui::Text("fps: %2.f", window.calculateFrameRate());
+		ImGui::Begin("Galaxy");
+		ImGui::Text("fps: %.2f", window.calculateFrameRate());
 
-		ImGui::SliderInt("Particles", &particlesCount, 100, 10000000);
-		ImGui::Button("Button", ImVec2(50, 30));
+		bool needReinit = false;
+
+		auto initSliderInt = [&](const char* label, int& v, int mn, int mx) {
+			ImGui::SliderInt(label, &v, mn, mx);
+			if (ImGui::IsItemDeactivatedAfterEdit())
+				needReinit = true;
+		};
+		auto initSliderFloat = [&](const char* label, float& v, float mn, float mx) {
+			ImGui::SliderFloat(label, &v, mn, mx);
+			if (ImGui::IsItemDeactivatedAfterEdit())
+				needReinit = true;
+		};
+
+		initSliderInt("Particles", galaxyParams.particleCount, 1000, 100000);
+		initSliderFloat("Radius", galaxyParams.galaxyRadius, 1.0f, 100.0f);
+		initSliderFloat("Thickness", galaxyParams.diskThickness, 0.01f, 2.0f);
+		initSliderFloat("Eccentricity", galaxyParams.maxEccentricity, 0.0f, 0.99f);
+		initSliderInt("Arms", galaxyParams.armCount, 2, 10);
+		initSliderFloat("Arm Twist", galaxyParams.armTwist, 0.0f, 10.0f);
+
+		ImGui::SliderFloat("Orbital Speed", &galaxyParams.maxOrbitalSpeed, 0.0f, 5.0f);
+		ImGui::SliderFloat("Core Radius", &galaxyParams.coreRadius, 0.01f, 5.0f);
 		ImGui::End();
+
+		if (needReinit)
+			renderer.reinitParticles(galaxyParams);
 
 		camera.uploadUbo();
 

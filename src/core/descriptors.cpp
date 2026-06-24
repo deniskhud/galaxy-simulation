@@ -91,3 +91,27 @@ void DescriptorPool::createDescriptorPool(uint32_t maxSets, uint32_t storageBuff
 	};
 	descriptorPool = vk::raii::DescriptorPool(context.getDevice(), poolInfo);
 }
+
+void DescriptorPool::updateComputeSet(vk::Buffer newSsbo, vk::DeviceSize size) {
+	vk::DescriptorBufferInfo ssboInfo{newSsbo, 0, size};
+	vk::WriteDescriptorSet write{
+	    .dstSet = *computeDescriptorSet,
+	    .dstBinding = 0,
+	    .descriptorCount = 1,
+	    .descriptorType = vk::DescriptorType::eStorageBuffer,
+	    .pBufferInfo = &ssboInfo,
+	};
+	context.getDevice().updateDescriptorSets(write, {});
+}
+
+void DescriptorPool::updateGraphicsSet(vk::Buffer newSsbo, vk::DeviceSize size) {
+	vk::DescriptorBufferInfo ssboInfo{newSsbo, 0, size};
+	vk::WriteDescriptorSet write{
+	    .dstSet = *descriptorSet,
+	    .dstBinding = 1, // binding=1 — particles SSBO в vertex шейдере
+	    .descriptorCount = 1,
+	    .descriptorType = vk::DescriptorType::eStorageBuffer,
+	    .pBufferInfo = &ssboInfo,
+	};
+	context.getDevice().updateDescriptorSets(write, {});
+}
