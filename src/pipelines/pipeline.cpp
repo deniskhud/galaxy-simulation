@@ -9,8 +9,8 @@ Pipeline::Pipeline(const VulkanContext& context, const SwapChain& swapChain) : c
 
 bool Pipeline::createPipeline() {
 	try {
-		auto vertShader = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/vert.spv");
-		auto fragShader = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/frag.spv");
+		auto vertShader = readShaderFile("../src/shaders/vert.spv");
+		auto fragShader = readShaderFile("../src/shaders/frag.spv");
 
 		vk::raii::ShaderModule vert = createShaderModule(vertShader);
 		vk::raii::ShaderModule frag = createShaderModule(fragShader);
@@ -227,7 +227,7 @@ vk::raii::ShaderModule Pipeline::createShaderModule(const std::vector<char>& cod
 /* compute pipeline */
 bool Pipeline::createComputePipeline() {
 	try {
-		auto compShaderCode = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/comp.spv");
+		auto compShaderCode = readShaderFile("../src/shaders/comp.spv");
 		vk::raii::ShaderModule comp = createShaderModule(compShaderCode);
 
 		vk::PipelineShaderStageCreateInfo compShaderStageInfo{
@@ -265,7 +265,7 @@ bool Pipeline::createComputePipeline() {
 
 bool Pipeline::createInitComputePipeline() {
 	try {
-		auto shaderCode = readShaderFile("/home/denis/projects/Vulkan-engine/src/shaders/computeInit.spv");
+		auto shaderCode = readShaderFile("../src/shaders/computeInit.spv");
 		auto spv = createShaderModule(shaderCode);
 
 		vk::PipelineShaderStageCreateInfo shaderStageInfo{
