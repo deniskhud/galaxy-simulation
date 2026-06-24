@@ -11,8 +11,23 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/ocornut/imgui.git
         GIT_TAG v1.92.8
 )
-
 FetchContent_MakeAvailable(imgui)
+
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG        1.0.1
+)
+FetchContent_MakeAvailable(glm)
+
+FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG        release-3.4.10
+)
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON  CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(SDL3)
 
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
