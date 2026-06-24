@@ -40,7 +40,7 @@ target_link_libraries(imgui PUBLIC
         ${SDL3_LIBRARIES}
 )
 
-add_executable(galactic main.cpp
+add_executable(galactic src/main.cpp
         src/window/window.hpp
         src/window/window.cpp
         src/core/context.hpp

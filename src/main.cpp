@@ -1,13 +1,13 @@
-#include "src/camera/camera.hpp"
-#include "src/core/buffer.hpp"
-#include "src/core/context.hpp"
-#include "src/core/descriptors.hpp"
-#include "src/core/swapchain.hpp"
-#include "src/gui/imguiSystem.hpp"
-#include "src/pipelines/pipeline.hpp"
-#include "src/renderer/renderer.hpp"
-#include "src/scene/particle.hpp"
-#include "src/window/window.hpp"
+#include "camera/camera.hpp"
+#include "core/buffer.hpp"
+#include "core/context.hpp"
+#include "core/descriptors.hpp"
+#include "core/swapchain.hpp"
+#include "gui/imguiSystem.hpp"
+#include "pipelines/pipeline.hpp"
+#include "renderer/renderer.hpp"
+#include "scene/particle.hpp"
+#include "window/window.hpp"
 
 int main() {
 	GalaxyParams galaxyParams;
