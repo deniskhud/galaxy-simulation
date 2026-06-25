@@ -23,13 +23,6 @@ int main() {
 	auto [w, h] = window.getFrameBufferSize();
 	Camera camera(context, static_cast<float>(w) / static_cast<float>(h));
 
-	/*Buffer computeBuffer(
-	    context,
-	    sizeof(int),
-	    vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
-	    vk::MemoryPropertyFlagBits::eDeviceLocal
-	);*/
-
 	DescriptorPool descriptors(
 	    context,
 	    pipeline,
@@ -55,48 +48,35 @@ int main() {
 	Renderer renderer(context, swapChain, pipeline, descriptors, particles, imguiSystem);
 	renderer.setGalaxyParams(galaxyParams);
 
-	SDL_Event e;
-	float lastX = 0.0f;
-	float lastY = 0.0f;
-	bool rotating = false;
-
+	InputState input;
+	SDL_Event event;
 	bool running = true;
+
+
+	Uint64 previous =
+	SDL_GetPerformanceCounter();
 	while (running) {
-		while (SDL_PollEvent(&e)) {
-			imguiSystem.processEvent(e);
-			if (e.type == SDL_EVENT_QUIT)
+		Uint64 current = SDL_GetPerformanceCounter();
+
+		float deltaTime = static_cast<float>(current - previous) /
+			static_cast<float>(SDL_GetPerformanceFrequency());
+		previous = current;
+
+		input.update();
+		while (SDL_PollEvent(&event)) {
+			imguiSystem.processEvent(event);
+			if (event.type == SDL_EVENT_QUIT)
 				running = false;
-			if (e.type == SDL_EVENT_WINDOW_RESIZED) {
+
+			if (event.type == SDL_EVENT_WINDOW_RESIZED) {
 				window.framebufferResized = true;
 			}
-
-			ImGuiIO& io = ImGui::GetIO();
-
-			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_LEFT) {
-				rotating = true;
-
-				lastX = e.button.x;
-				lastY = e.button.y;
-			}
-			if (e.type == SDL_EVENT_MOUSE_BUTTON_UP && e.button.button == SDL_BUTTON_LEFT) {
-				rotating = false;
-			}
-			if (e.type == SDL_EVENT_MOUSE_MOTION && rotating && !io.WantCaptureMouse) {
-				float dx = e.motion.x - lastX;
-
-				float dy = e.motion.y - lastY;
-
-				camera.rotate(dx, dy);
-
-				lastX = e.motion.x;
-
-				lastY = e.motion.y;
-			}
-
-			if (e.type == SDL_EVENT_MOUSE_WHEEL && !io.WantCaptureMouse) {
-				camera.zoom(e.wheel.y);
+			if (!ImGui::GetIO().WantCaptureMouse) {
+				input.processEvent(event);
 			}
 		}
+
+		camera.updateCamera(deltaTime, input);
 
 		imguiSystem.beginFrame();
 		ImGui::Begin("Galaxy");
@@ -115,7 +95,7 @@ int main() {
 				needReinit = true;
 		};
 
-		initSliderInt("Particles", galaxyParams.particleCount, 1000, 100000);
+		initSliderInt("Particles", galaxyParams.particleCount, 1000, 10000000);
 		initSliderFloat("Radius", galaxyParams.galaxyRadius, 1.0f, 100.0f);
 		initSliderFloat("Thickness", galaxyParams.diskThickness, 0.01f, 2.0f);
 		initSliderFloat("Eccentricity", galaxyParams.maxEccentricity, 0.0f, 0.99f);
@@ -129,15 +109,12 @@ int main() {
 		if (needReinit)
 			renderer.reinitParticles(galaxyParams);
 
-		camera.uploadUbo();
-
 		renderer.drawFrame();
-
 		if (window.framebufferResized) {
 			context.getDevice().waitIdle();
-
 			swapChain.recreateSwapChain();
-
+			auto [w, h] = window.getFrameBufferSize();
+			camera.setAspectRatio(static_cast<float>(w) / static_cast<float>(h));
 			window.framebufferResized = false;
 		}
 	}
