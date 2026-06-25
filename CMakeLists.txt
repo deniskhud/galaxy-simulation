@@ -79,8 +79,6 @@ add_executable(galactic src/main.cpp
         src/renderer/renderer.cpp
         src/include/inc.hpp
         src/debugSystem.hpp
-        src/engine/engine.hpp
-        src/engine/engine.cpp
         src/gui/imguiSystem.hpp
         src/gui/imguiSystem.cpp
 
