@@ -20,11 +20,7 @@ Window::Window() {
 	if (!window) {
 		throw std::runtime_error("Failed to create SDL3 window: " + std::string(SDL_GetError()));
 	}
-	debugSystem::log(
-	    LogLevel::INFO,
-	    "window",
-	    "window created: width " + std::to_string(width) + ", height " + std::to_string(height)
-	);
+	LOG_INFO("window","window created: width {}, height {}", std::to_string(width), std::to_string(height));
 }
 
 Window::~Window() {
@@ -44,7 +40,7 @@ bool SDLCALL Window::framebufferResizeCallback(void* userdata, SDL_Event* event)
 vk::raii::SurfaceKHR Window::createSurface(const vk::raii::Instance& instance) const {
 	VkSurfaceKHR surface;
 	if (!SDL_Vulkan_CreateSurface(window, *instance, nullptr, &surface)) {
-		throw std::runtime_error("failed to create window surface!");
+		LOG_ERROR("window", "failed to create window surface!");
 	}
 	return vk::raii::SurfaceKHR(instance, surface);
 }
