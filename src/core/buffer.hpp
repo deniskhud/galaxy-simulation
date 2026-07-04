@@ -36,4 +36,12 @@ private:
 	void* mappedPtr = nullptr;
 };
 
+class BufferPool {
+public:
+
+	void addBuffer();
+private:
+	std::vector<Buffer> buffers;
+};
+
 #endif // GALACTIC_BUFFER_HPP

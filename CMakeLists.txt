@@ -81,6 +81,8 @@ add_executable(galactic src/main.cpp
         src/debugSystem.hpp
         src/gui/imguiSystem.hpp
         src/gui/imguiSystem.cpp
+        src/engine/engine.hpp
+        src/engine/engine.cpp
 
 )
 
