@@ -26,7 +26,7 @@ private:
 	void drawGui();
 	void handleResize();
 
-	GalaxyParams galaxyParams;
+	GuiDrawParams guiParams{};
 	std::unique_ptr<Window> window;
 	std::unique_ptr<VulkanContext> vulkanContext;
 	std::unique_ptr<SwapChain> swapChain;
@@ -34,7 +34,6 @@ private:
 	std::unique_ptr<ParticleSystem> particles;
 	std::unique_ptr<Camera> camera;
 	std::unique_ptr<DescriptorPool> descriptorPool;
-	std::unique_ptr<Buffer> computeBuffer;
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<ImguiSystem> imGuiSystem;
 };

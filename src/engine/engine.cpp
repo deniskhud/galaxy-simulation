@@ -10,24 +10,22 @@ Engine::~Engine() {
 
 void Engine::initialize() {
 	window = std::make_unique<Window>();
+	guiParams.frameRate = window->calculateFrameRate();
+
 	vulkanContext = std::make_unique<VulkanContext>(*window);
 
 	swapChain = std::make_unique<SwapChain>(*vulkanContext, *window);
 	pipeline = std::make_unique<Pipeline>(*vulkanContext, *swapChain);
 
-	particles = std::make_unique<ParticleSystem>(*vulkanContext, static_cast<std::uint32_t>(galaxyParams.particleCount));
+	particles = std::make_unique<ParticleSystem>(*vulkanContext, static_cast<std::uint32_t>(guiParams.galaxyParams.particleCount));
 	auto [w, h] = window->getFrameBufferSize();
 	camera = std::make_unique<Camera>(*vulkanContext, static_cast<float>(w) / static_cast<float>(h));
 
 	descriptorPool = std::make_unique<DescriptorPool>(
 	    *vulkanContext,
 	    *pipeline,
-	    camera->getCameraBuffer().get(),
-	    camera->getCameraBuffer().getSize(),
-	    particles->getSsboBuffer().get(),
-	    particles->getSsboBuffer().getSize(),
-	    particles->getSsboBuffer().get(),
-	    particles->getSsboBuffer().getSize()
+	    camera->getCameraBuffer().getBufferView(),
+	    particles->getSsboBuffer().getBufferView()
 	);
 
 	imGuiSystem = std::make_unique<ImguiSystem>(
@@ -50,7 +48,7 @@ void Engine::initialize() {
 	    *imGuiSystem
 	);
 
-	renderer->setGalaxyParams(galaxyParams);
+	renderer->setGalaxyParams(guiParams.galaxyParams);
 }
 
 void Engine::run() {
@@ -98,42 +96,12 @@ bool Engine::processEvents(InputState& input) {
 
 void Engine::update(float deltaTime, const InputState& input) {
 	camera->updateCamera(deltaTime, input);
+	guiParams.frameRate = window->calculateFrameRate();
 }
 
 void Engine::drawGui() {
-	imGuiSystem->beginFrame();
-	ImGui::Begin("Galaxy");
-	ImGui::Text("fps: %.2f", window->calculateFrameRate());
-
-	bool needReinit = false;
-
-	auto initSliderInt = [&](const char* label, int& v, int mn, int mx) {
-		ImGui::SliderInt(label, &v, mn, mx);
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			needReinit = true;
-		}
-	};
-
-	auto initSliderFloat = [&](const char* label, float& v, float mn, float mx) {
-		ImGui::SliderFloat(label, &v, mn, mx);
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			needReinit = true;
-		}
-	};
-
-	initSliderInt("Particles", galaxyParams.particleCount, 1000, 10000000);
-	initSliderFloat("Radius", galaxyParams.galaxyRadius, 1.0f, 100.0f);
-	initSliderFloat("Thickness", galaxyParams.diskThickness, 0.01f, 2.0f);
-	initSliderFloat("Eccentricity", galaxyParams.maxEccentricity, 0.0f, 0.99f);
-	initSliderInt("Arms", galaxyParams.armCount, 2, 10);
-	initSliderFloat("Arm Twist", galaxyParams.armTwist, 0.0f, 10.0f);
-
-	ImGui::SliderFloat("Orbital Speed", &galaxyParams.maxOrbitalSpeed, 0.0f, 5.0f);
-	ImGui::SliderFloat("Core Radius", &galaxyParams.coreRadius, 0.01f, 5.0f);
-	ImGui::End();
-
-	if (needReinit) {
-		renderer->reinitParticles(galaxyParams);
+	if (imGuiSystem->drawGui(guiParams)) {
+		renderer->reinitParticles(guiParams.galaxyParams);
 	}
 }
 

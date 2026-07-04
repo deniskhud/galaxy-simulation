@@ -3,6 +3,11 @@
 
 #include "context.hpp"
 
+struct BufferView {
+	vk::Buffer buffer{nullptr};
+	vk::DeviceSize size{0};
+};
+
 class Buffer {
 public:
 	Buffer(
@@ -14,34 +19,20 @@ public:
 
 	void upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize offset = 0);
 
-	static Buffer createDeviceLocal(
-	    const VulkanContext& context, const void* data, vk::DeviceSize size, vk::BufferUsageFlags usageFlags
-	);
-
-	vk::Buffer get() const { return *buffer; }
-	vk::DeviceSize getSize() const { return size; }
+	BufferView getBufferView() const {
+		return {*buffer, size};
+	}
 
 private:
-	vk::raii::Buffer createBuffer() const;
-	vk::raii::DeviceMemory allocateMemory();
+	vk::raii::Buffer createBuffer(const vk::BufferUsageFlags& usageFlags) const;
+	vk::raii::DeviceMemory allocateMemory(const vk::MemoryPropertyFlags& memPropertyFlags);
 	std::uint32_t findMemoryType(std::uint32_t typeFilter, vk::MemoryPropertyFlags properties) const;
 
 	const VulkanContext& context;
-	vk::DeviceSize size = 0;
-	vk::BufferUsageFlags usageFlags;
-	vk::MemoryPropertyFlags memPropertyFlags;
+	vk::raii::Buffer buffer{nullptr};
+	vk::DeviceSize size{0};
 
-	vk::raii::Buffer buffer = nullptr;
-	vk::raii::DeviceMemory memory = nullptr;
-	void* mappedPtr = nullptr;
+	vk::raii::DeviceMemory memory{nullptr};
+	void* mappedPtr{nullptr};
 };
-
-class BufferPool {
-public:
-
-	void addBuffer();
-private:
-	std::vector<Buffer> buffers;
-};
-
 #endif // GALACTIC_BUFFER_HPP

@@ -6,36 +6,21 @@
 #include <array>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
+#include "../core/buffer.hpp"
 class DescriptorPool {
 public:
-	void createDescriptorPool(uint32_t maxSets, uint32_t storageBufferCount);
-	vk::raii::DescriptorSet allocateDescriptorSet(vk::DescriptorSetLayout descriptorSetLayout);
-
 	DescriptorPool(
 	    const VulkanContext& context,
 	    const Pipeline& pipeline,
-	    vk::Buffer cameraUbo,
-	    vk::DeviceSize uboSize,
-	    vk::Buffer particleSsbo,
-	    vk::DeviceSize ssboSize
-	);
-
-	DescriptorPool(
-	    const VulkanContext& context,
-	    const Pipeline& pipeline,
-	    vk::Buffer cameraUbo,
-	    vk::DeviceSize uboSize,
-	    vk::Buffer particleSsbo,
-	    vk::DeviceSize ssboSize,
-	    vk::Buffer computeBuffer,
-	    vk::DeviceSize computeBufferSize
+	    const BufferView& cameraBufferView,
+	    const BufferView& particlesBufferView
 	);
 
 	const vk::raii::DescriptorSet& get() const { return descriptorSet; }
 	const vk::raii::DescriptorSet& getComputeSet() const { return computeDescriptorSet; }
 
-	void updateComputeSet(vk::Buffer newSsbo, vk::DeviceSize size);
-	void updateGraphicsSet(vk::Buffer newSsbo, vk::DeviceSize size);
+	void updateComputeSet(const BufferView& bufferView);
+	void updateGraphicsSet(const BufferView& bufferView);
 
 private:
 	vk::raii::DescriptorPool descriptorPool = nullptr;
@@ -45,5 +30,8 @@ private:
 
 	const VulkanContext& context;
 	const Pipeline& pipeline;
+
+	void createDescriptorPool(uint32_t maxSets, uint32_t storageBufferCount);
+	vk::raii::DescriptorSet allocateDescriptorSet(vk::DescriptorSetLayout descriptorSetLayout);
 };
 #endif // GALACTIC_DESCRIPTORS_HPP

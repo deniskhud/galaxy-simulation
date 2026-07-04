@@ -1,53 +1,17 @@
 #include "descriptors.hpp"
 
-DescriptorPool::DescriptorPool(
-    const VulkanContext& context,
-    const Pipeline& pipeline,
-    vk::Buffer cameraUbo,
-    vk::DeviceSize uboSize,
-    vk::Buffer particleSsbo,
-    vk::DeviceSize ssboSize
-)
-    : context(context), pipeline(pipeline) {
-	createDescriptorPool(1, 1);
-	descriptorSet = allocateDescriptorSet(*pipeline.getDescriptorSetLayout());
+DescriptorPool::DescriptorPool(const VulkanContext& context, const Pipeline& pipeline,
+	const BufferView& cameraBufferView, const BufferView& particlesBufferView)
+		: context(context), pipeline(pipeline) {
 
-	vk::DescriptorBufferInfo uboInfo{cameraUbo, 0, uboSize};
-	vk::DescriptorBufferInfo ssboInfo{particleSsbo, 0, ssboSize};
-	std::array<vk::WriteDescriptorSet, 2> writes = {{
-	    {.dstSet = *descriptorSet,
-	     .dstBinding = 0,
-	     .descriptorCount = 1,
-	     .descriptorType = vk::DescriptorType::eUniformBuffer,
-	     .pBufferInfo = &uboInfo},
-	    {.dstSet = *descriptorSet,
-	     .dstBinding = 1,
-	     .descriptorCount = 1,
-	     .descriptorType = vk::DescriptorType::eStorageBuffer,
-	     .pBufferInfo = &ssboInfo},
-	}};
-	context.getDevice().updateDescriptorSets(writes, {});
-}
-
-DescriptorPool::DescriptorPool(
-    const VulkanContext& context,
-    const Pipeline& pipeline,
-    vk::Buffer cameraUbo,
-    vk::DeviceSize uboSize,
-    vk::Buffer particleSsbo,
-    vk::DeviceSize ssboSize,
-    vk::Buffer computeBuffer,
-    vk::DeviceSize computeBufferSize
-)
-    : context(context), pipeline(pipeline) {
 	createDescriptorPool(2, 2); // 2 сета, 2 storage-буфера суммарно
 
 	descriptorSet = allocateDescriptorSet(*pipeline.getDescriptorSetLayout());
 	computeDescriptorSet = allocateDescriptorSet(*pipeline.getComputeDescriptorSetLayout());
 
-	vk::DescriptorBufferInfo uboInfo{cameraUbo, 0, uboSize};
-	vk::DescriptorBufferInfo ssboInfo{particleSsbo, 0, ssboSize};
-	vk::DescriptorBufferInfo computeInfo{computeBuffer, 0, computeBufferSize};
+	vk::DescriptorBufferInfo uboInfo{cameraBufferView.buffer, 0, cameraBufferView.size};
+	vk::DescriptorBufferInfo ssboInfo{particlesBufferView.buffer, 0, particlesBufferView.size};
+	vk::DescriptorBufferInfo computeInfo{particlesBufferView.buffer, 0, particlesBufferView.size};
 
 	std::array<vk::WriteDescriptorSet, 3> writes = {{
 	    {.dstSet = *descriptorSet,
@@ -92,8 +56,8 @@ void DescriptorPool::createDescriptorPool(uint32_t maxSets, uint32_t storageBuff
 	descriptorPool = vk::raii::DescriptorPool(context.getDevice(), poolInfo);
 }
 
-void DescriptorPool::updateComputeSet(vk::Buffer newSsbo, vk::DeviceSize size) {
-	vk::DescriptorBufferInfo ssboInfo{newSsbo, 0, size};
+void DescriptorPool::updateComputeSet(const BufferView& bufferView) {
+	vk::DescriptorBufferInfo ssboInfo{bufferView.buffer, 0, bufferView.size};
 	vk::WriteDescriptorSet write{
 	    .dstSet = *computeDescriptorSet,
 	    .dstBinding = 0,
@@ -104,8 +68,8 @@ void DescriptorPool::updateComputeSet(vk::Buffer newSsbo, vk::DeviceSize size) {
 	context.getDevice().updateDescriptorSets(write, {});
 }
 
-void DescriptorPool::updateGraphicsSet(vk::Buffer newSsbo, vk::DeviceSize size) {
-	vk::DescriptorBufferInfo ssboInfo{newSsbo, 0, size};
+void DescriptorPool::updateGraphicsSet(const BufferView& bufferView) {
+	vk::DescriptorBufferInfo ssboInfo{bufferView.buffer, 0, bufferView.size};
 	vk::WriteDescriptorSet write{
 	    .dstSet = *descriptorSet,
 	    .dstBinding = 1, // binding=1 — particles SSBO в vertex шейдере

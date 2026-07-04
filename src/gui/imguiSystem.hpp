@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL.h>
 #include <vulkan/vulkan_raii.hpp>
+#include "../include/inc.hpp"
 
 class ImguiSystem {
 public:
@@ -22,11 +23,12 @@ public:
 
 	~ImguiSystem();
 
+	bool drawGui(GuiDrawParams &params);
 	void processEvent(const SDL_Event& event);
-	void beginFrame();
 	void render(const vk::raii::CommandBuffer& cmdBuf);
-
 private:
+	void beginFrame();
+
 	vk::raii::DescriptorPool descriptorPool = nullptr;
 
 	std::unique_ptr<ImGuiContext, decltype(&ImGui::DestroyContext)> context{nullptr, ImGui::DestroyContext};

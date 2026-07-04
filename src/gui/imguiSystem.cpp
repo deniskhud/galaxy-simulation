@@ -68,3 +68,38 @@ void ImguiSystem::render(const vk::raii::CommandBuffer& cmdBuf) {
 	ImGui::Render();
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmdBuf);
 }
+
+bool ImguiSystem::drawGui(GuiDrawParams& params) {
+	beginFrame();
+	ImGui::Begin("Galaxy");
+	ImGui::Text("fps: %.2f", params.frameRate);
+
+	bool needReinit = false;
+
+	auto initSliderInt = [&](const char* label, int& v, int mn, int mx) {
+		ImGui::SliderInt(label, &v, mn, mx);
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			needReinit = true;
+		}
+	};
+
+	auto initSliderFloat = [&](const char* label, float& v, float mn, float mx) {
+		ImGui::SliderFloat(label, &v, mn, mx);
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			needReinit = true;
+		}
+	};
+
+	initSliderInt("Particles", params.galaxyParams.particleCount, 1000, 10000000);
+	initSliderFloat("Radius", params.galaxyParams.galaxyRadius, 1.0f, 100.0f);
+	initSliderFloat("Thickness", params.galaxyParams.diskThickness, 0.01f, 2.0f);
+	initSliderFloat("Eccentricity", params.galaxyParams.maxEccentricity, 0.0f, 0.99f);
+	initSliderInt("Arms", params.galaxyParams.armCount, 2, 10);
+	initSliderFloat("Arm Twist", params.galaxyParams.armTwist, 0.0f, 10.0f);
+
+	ImGui::SliderFloat("Orbital Speed", &params.galaxyParams.maxOrbitalSpeed, 0.0f, 5.0f);
+	ImGui::SliderFloat("Core Radius", &params.galaxyParams.coreRadius, 0.01f, 5.0f);
+	ImGui::End();
+
+	return needReinit;
+}

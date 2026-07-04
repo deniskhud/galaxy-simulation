@@ -68,7 +68,7 @@ void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer,
 		    .dstAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite,
 		    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		    .buffer = particles.getSsboBuffer().get(),
+		    .buffer = particles.getSsboBuffer().getBufferView().buffer,
 		    .offset = 0,
 		    .size = VK_WHOLE_SIZE,
 		};
@@ -107,7 +107,7 @@ void Renderer::recordCommandBuffer(const vk::raii::CommandBuffer& commandBuffer,
 	    .dstAccessMask = vk::AccessFlagBits::eVertexAttributeRead,
 	    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 	    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-	    .buffer = particles.getSsboBuffer().get(),
+	    .buffer = particles.getSsboBuffer().getBufferView().buffer,
 	    .offset = 0,
 	    .size = VK_WHOLE_SIZE,
 	};
@@ -281,12 +281,12 @@ std::vector<vk::raii::Fence> Renderer::createInFlightFences() {
 	return result;
 }
 
-void Renderer::reinitParticles(GalaxyParams& p) {
+void Renderer::reinitParticles(const GalaxyParams& p) {
 	context.getDevice().waitIdle();
 
 	particles.resizeBuffer(context, p.particleCount);
-	descriptors.updateComputeSet(particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
-	descriptors.updateGraphicsSet(particles.getSsboBuffer().get(), particles.getSsboBuffer().getSize());
+	descriptors.updateComputeSet(particles.getSsboBuffer().getBufferView());
+	descriptors.updateGraphicsSet(particles.getSsboBuffer().getBufferView());
 
 	galaxyParams = p;
 	needsReinit = true;

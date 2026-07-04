@@ -7,19 +7,8 @@
 #include "../gui/imguiSystem.hpp"
 #include "../pipelines/pipeline.hpp"
 #include "../scene/particle.hpp"
-
+#include "../include/inc.hpp"
 #include <chrono>
-
-struct GalaxyParams {
-	float galaxyRadius = 20.0f;
-	float diskThickness = 0.30f;
-	float maxEccentricity = 0.6f;
-	int armCount = 2.0f;
-	float armTwist = 4.0f;
-	float maxOrbitalSpeed = 0.7f;
-	float coreRadius = 0.4f;
-	int particleCount = 20000;
-};
 
 class Renderer {
 public:
@@ -34,7 +23,7 @@ public:
 
 	void drawFrame();
 
-	void reinitParticles(GalaxyParams& galaxyParams);
+	void reinitParticles(const GalaxyParams& galaxyParams);
 	void setGalaxyParams(const GalaxyParams& p) { galaxyParams = p; }
 
 private:
