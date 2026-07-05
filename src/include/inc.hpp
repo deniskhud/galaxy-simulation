@@ -1,11 +1,6 @@
 #ifndef GALACTIC_INC_HPP
 #define GALACTIC_INC_HPP
 
-#ifdef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
 #include "../debugSystem.hpp"
 
 struct GalaxyParams {
@@ -17,6 +12,19 @@ struct GalaxyParams {
 	float maxOrbitalSpeed = 0.7f;
 	float coreRadius = 0.4f;
 	int particleCount = 20000;
+};
+
+struct InputState final {
+	bool forward{};
+	bool backward{};
+	bool left{};
+	bool right{};
+	bool up{};
+	bool down{};
+
+	float mouseDX{};
+	float mouseDY{};
+	float wheel{};
 };
 
 struct GuiDrawParams {

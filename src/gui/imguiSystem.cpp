@@ -47,9 +47,11 @@ ImguiSystem::ImguiSystem(
 	initInfo.PipelineInfoMain.PipelineRenderingCreateInfo.pColorAttachmentFormats = &fmt;
 
 	ImGui_ImplVulkan_Init(&initInfo);
+	LOG_INFO("ImguiSystem::ImguiSystem", "ImGui initialized with {} swapchain images", imageCount);
 }
 
 ImguiSystem::~ImguiSystem() {
+	LOG_INFO("ImguiSystem::~ImguiSystem", "Shutting down ImGui");
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
 }

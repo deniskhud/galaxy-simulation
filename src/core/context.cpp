@@ -1,6 +1,7 @@
 #include "context.hpp"
 
 VulkanContext::VulkanContext(const Window& window) {
+	LOG_INFO("VulkanContext::VulkanContext", "Creating Vulkan context");
 	createInstance(window.getRequiredInstanceExtensions());
 	setupDebugMessenger();
 
@@ -8,6 +9,7 @@ VulkanContext::VulkanContext(const Window& window) {
 
 	pickPhysicalDevice();
 	createLogicalDevice(surface);
+	LOG_INFO("VulkanContext::VulkanContext", "Vulkan context created");
 }
 
 VulkanContext::~VulkanContext() {}
@@ -37,6 +39,12 @@ void VulkanContext::createInstance(const std::vector<const char*>& requiredInsta
 	};
 
 	instance = vk::raii::Instance(context, createInfo);
+	LOG_INFO(
+	    "VulkanContext::createInstance",
+	    "Vulkan instance created with {} extensions and {} validation layers",
+	    requiredInstanceExtensions.size(),
+	    validationLayers.size()
+	);
 }
 
 std::vector<char const*> VulkanContext::setupValidationLayer() {
@@ -47,12 +55,13 @@ std::vector<char const*> VulkanContext::setupValidationLayer() {
 
 	// Check if the required layers are supported by the Vulkan implementation.
 	auto layerProperties = context.enumerateInstanceLayerProperties();
-	if (std::ranges::any_of(requiredLayers, [&layerProperties](auto const& requiredLayer) {
+	auto unsupportedLayerIt = std::ranges::find_if(requiredLayers, [&layerProperties](auto const& requiredLayer) {
 		    return std::ranges::none_of(layerProperties, [requiredLayer](auto const& layerProperty) {
 			    return strcmp(layerProperty.layerName, requiredLayer) == 0;
 		    });
-	    })) {
-		throw std::runtime_error("One or more required layers are not supported!");
+	    });
+	if (unsupportedLayerIt != requiredLayers.end()) {
+		LOG_ERROR("VulkanContext::setupValidationLayer", "Required validation layer not supported: {}", *unsupportedLayerIt);
 	}
 	return requiredLayers;
 }
@@ -74,6 +83,7 @@ void VulkanContext::setupDebugMessenger() {
 	    .pfnUserCallback = &debugCallback,
 	};
 	debugMessenger = instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
+	LOG_INFO("VulkanContext::setupDebugMessenger", "Vulkan debug messenger created");
 }
 
 VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanContext::debugCallback(
@@ -82,7 +92,7 @@ VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanContext::debugCallback(
     const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData
 ) {
-	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+	LOG_WARNING("VulkanValidation", "{}", pCallbackData->pMessage);
 	return vk::False;
 }
 
@@ -92,9 +102,14 @@ void VulkanContext::pickPhysicalDevice() {
 		return isDeviceSuitable(physicalDevice);
 	});
 	if (deviceIt == physicalDevices.end()) {
-		throw std::runtime_error("Failed to find suitable physical device!");
+		LOG_ERROR("VulkanContext::pickPhysicalDevice", "Failed to find suitable physical device");
 	}
 	physicalDevice = *deviceIt;
+	LOG_INFO(
+	    "VulkanContext::pickPhysicalDevice",
+	    "Selected physical device: {}",
+	    physicalDevice.getProperties().deviceName.data()
+	);
 }
 
 bool VulkanContext::isDeviceSuitable(const vk::raii::PhysicalDevice& physicalDevice) {
@@ -139,9 +154,13 @@ void VulkanContext::checkExtensionsSupport(const std::vector<const char*>& requi
 		    return std::ranges::none_of(extensionProperties, [requiredExtension](auto const& extensionProperty) {
 			    return strcmp(extensionProperty.extensionName, requiredExtension) == 0;
 		    });
-	    });
+		    });
 	if (unsupportedPropertyIt != requiredInstanceExtensions.end()) {
-		throw std::runtime_error("Required extension not supported: " + std::string(*unsupportedPropertyIt));
+		LOG_ERROR(
+		    "VulkanContext::checkExtensionsSupport",
+		    "Required instance extension not supported: {}",
+		    *unsupportedPropertyIt
+		);
 	}
 }
 
@@ -152,7 +171,7 @@ std::uint32_t VulkanContext::findQueueFamilyIndex(vk::QueueFlagBits requiredFlag
 			return i;
 		}
 	}
-	throw std::runtime_error("Failed to find queue family");
+	LOG_ERROR("VulkanContext::findQueueFamilyIndex", "Failed to find queue family for requested flags");
 }
 
 void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
@@ -186,6 +205,7 @@ void VulkanContext::createLogicalDevice(const vk::raii::SurfaceKHR& surface) {
 
 	device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 	queue = vk::raii::Queue(device, queueIndex, 0);
+	LOG_INFO("VulkanContext::createLogicalDevice", "Logical device created with queue family {}", queueIndex);
 }
 
 /* getters */

@@ -6,6 +6,7 @@
 
 ParticleSystem::ParticleSystem(const VulkanContext& context, std::uint32_t count) : count(count) {
 	resizeBuffer(context, count);
+	LOG_INFO("ParticleSystem::ParticleSystem", "Particle system created with {} particles", count);
 }
 
 void ParticleSystem::resizeBuffer(const VulkanContext& context, const std::uint32_t newSize) {
@@ -16,4 +17,5 @@ void ParticleSystem::resizeBuffer(const VulkanContext& context, const std::uint3
 	    vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst,
 	    vk::MemoryPropertyFlagBits::eDeviceLocal
 	);
+	LOG_INFO("ParticleSystem::resizeBuffer", "Particle SSBO resized: {} particles", count);
 }

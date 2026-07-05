@@ -23,6 +23,7 @@ public:
 private:
 	bool processEvents(InputState& input);
 	void update(float deltaTime, const InputState& input);
+	void uploadCameraUbo();
 	void drawGui();
 	void handleResize();
 
@@ -33,6 +34,7 @@ private:
 	std::unique_ptr<Pipeline> pipeline;
 	std::unique_ptr<ParticleSystem> particles;
 	std::unique_ptr<Camera> camera;
+	std::unique_ptr<Buffer> cameraUboBuffer;
 	std::unique_ptr<DescriptorPool> descriptorPool;
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<ImguiSystem> imGuiSystem;

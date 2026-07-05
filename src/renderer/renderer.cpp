@@ -14,7 +14,7 @@ Renderer::Renderer(
 	imageAvailableSemaphores = createImageAvailableSemaphores();
 	inFlightFences = createInFlightFences();
 	commandBuffers = createCommandBuffers();
-	// reinitParticles();
+	LOG_INFO("Renderer::Renderer", "Renderer frame resources created");
 }
 
 vk::raii::CommandPool Renderer::createCommandPool() const {
@@ -225,7 +225,9 @@ void Renderer::drawFrame() {
 	    swapChain.getSwapchain().acquireNextImage(UINT64_MAX, *imageAvailableSemaphores[frameIndex], nullptr);
 	// new func
 	if (result == vk::Result::eErrorOutOfDateKHR) {
+		LOG_WARNING("Renderer::drawFrame", "Swapchain image acquire returned out-of-date; recreating swapchain");
 		swapChain.recreateSwapChain();
+		renderFinishedSemaphores = recreateRenderFinishedSemaphores();
 		return;
 	}
 	commandBuffers[frameIndex].reset();
@@ -251,7 +253,12 @@ void Renderer::drawFrame() {
 	    .pSwapchains = &*swapChain.getSwapchain(),
 	    .pImageIndices = &imageIndex,
 	};
-	[[maybe_unused]] auto presentResult = context.getPresentQueue().presentKHR(presentInfo);
+	auto presentResult = context.getPresentQueue().presentKHR(presentInfo);
+	if (presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR) {
+		LOG_WARNING("Renderer::drawFrame", "Swapchain present requires recreation");
+		swapChain.recreateSwapChain();
+		renderFinishedSemaphores = recreateRenderFinishedSemaphores();
+	}
 	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -260,7 +267,13 @@ std::vector<vk::raii::Semaphore> Renderer::createRenderFinishedSemaphores() {
 	for (size_t i = 0; i < swapChain.getSwapChainImageCount(); ++i) {
 		result.emplace_back(vk::raii::Semaphore{context.getDevice(), vk::SemaphoreCreateInfo{}});
 	}
+	LOG_INFO("Renderer::createRenderFinishedSemaphores", "Created {} render-finished semaphores", result.size());
 	return result;
+}
+
+std::vector<vk::raii::Semaphore> Renderer::recreateRenderFinishedSemaphores() {
+	LOG_INFO("Renderer::recreateRenderFinishedSemaphores", "Recreating render-finished semaphores");
+	return createRenderFinishedSemaphores();
 }
 
 std::vector<vk::raii::Semaphore> Renderer::createImageAvailableSemaphores() {
@@ -268,6 +281,7 @@ std::vector<vk::raii::Semaphore> Renderer::createImageAvailableSemaphores() {
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
 		result.emplace_back(vk::raii::Semaphore{context.getDevice(), vk::SemaphoreCreateInfo{}});
 	}
+	LOG_INFO("Renderer::createImageAvailableSemaphores", "Created {} image-available semaphores", result.size());
 	return result;
 }
 
@@ -278,10 +292,12 @@ std::vector<vk::raii::Fence> Renderer::createInFlightFences() {
 		    vk::raii::Fence{context.getDevice(), vk::FenceCreateInfo{.flags = vk::FenceCreateFlagBits::eSignaled}}
 		);
 	}
+	LOG_INFO("Renderer::createInFlightFences", "Created {} in-flight fences", result.size());
 	return result;
 }
 
 void Renderer::reinitParticles(const GalaxyParams& p) {
+	LOG_INFO("Renderer::reinitParticles", "Reinitializing particle buffer with {} particles", p.particleCount);
 	context.getDevice().waitIdle();
 
 	particles.resizeBuffer(context, p.particleCount);

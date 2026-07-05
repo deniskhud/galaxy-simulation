@@ -17,6 +17,8 @@ public:
 	    vk::MemoryPropertyFlags memPropertyFlags
 	);
 
+	~Buffer();
+
 	void upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize offset = 0);
 
 	BufferView getBufferView() const {

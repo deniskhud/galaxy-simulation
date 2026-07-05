@@ -33,6 +33,8 @@ public:
 	Window();
 	~Window();
 
+	bool processEvent(const SDL_Event& event, InputState& input, bool allowInput);
+	void updateInput(InputState& input) const;
 	double calculateFrameRate();
 
 private:
@@ -40,6 +42,10 @@ private:
 	SDL_Window* window = nullptr;
 
 	bool SDLCALL framebufferResizeCallback(void* userdata, SDL_Event* event);
+
+	bool rotating = false;
+	float lastX{};
+	float lastY{};
 
 	Uint64 prev = SDL_GetPerformanceCounter();
 	double freq = static_cast<double>(SDL_GetPerformanceFrequency());

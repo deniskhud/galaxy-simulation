@@ -14,6 +14,14 @@ Buffer::Buffer(
 	if (memPropertyFlags & vk::MemoryPropertyFlagBits::eHostVisible) {
 		mappedPtr = memory.mapMemory(0, size);
 	}
+
+	LOG_INFO("Buffer::Buffer", "Created buffer: size {} bytes", size);
+}
+
+Buffer::~Buffer() {
+	if (mappedPtr) {
+		memory.unmapMemory();
+	}
 }
 
 vk::raii::Buffer Buffer::createBuffer(const vk::BufferUsageFlags& usageFlags) const {
@@ -32,7 +40,8 @@ std::uint32_t Buffer::findMemoryType(std::uint32_t typeFilter, vk::MemoryPropert
 			return i;
 		}
 	}
-	throw std::runtime_error("Failed to find suitable memory type");
+	LOG_ERROR("Buffer::findMemoryType", "Failed to find suitable memory type");
+	return 0;
 }
 
 vk::raii::DeviceMemory Buffer::allocateMemory(const vk::MemoryPropertyFlags& memPropertyFlags) {
@@ -46,10 +55,16 @@ vk::raii::DeviceMemory Buffer::allocateMemory(const vk::MemoryPropertyFlags& mem
 
 void Buffer::upload(const void* data, vk::DeviceSize uploadSize, vk::DeviceSize offset) {
 	if (!mappedPtr) {
-		throw std::runtime_error("Buffer: upload is called on a buffer with no host-visible memory");
+		LOG_ERROR("Buffer::upload", "Upload called on a buffer with no host-visible memory");
 	}
 	if (uploadSize + offset > size) {
-		throw std::runtime_error("Buffer: upload size is too big");
+		LOG_ERROR(
+		    "Buffer::upload",
+		    "Upload out of bounds: upload size {}, offset {}, buffer size {}",
+		    uploadSize,
+		    offset,
+		    size
+		);
 	}
 	std::memcpy(static_cast<char*>(mappedPtr) + offset, data, uploadSize);
 }

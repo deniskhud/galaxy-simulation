@@ -44,6 +44,9 @@ private:
 	std::vector<vk::raii::Semaphore> createImageAvailableSemaphores();
 	std::vector<vk::raii::Fence> createInFlightFences();
 
+	std::vector<vk::raii::Semaphore> recreateRenderFinishedSemaphores();
+
+
 	const VulkanContext& context;
 	SwapChain& swapChain;
 	const Pipeline& pipeline;

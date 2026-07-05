@@ -9,16 +9,21 @@ vk::SurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(std::vector<vk::SurfaceF
 	const auto formatIt = std::ranges::find_if(availableFormats, [](const auto& format) {
 		return format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
 	});
+	if (formatIt == availableFormats.end()) {
+		LOG_WARNING("SwapChain::chooseSwapSurfaceFormat", "Preferred surface format not found; using first available format");
+	}
 	return formatIt == availableFormats.end() ? availableFormats[0] : *formatIt;
 }
 
 vk::PresentModeKHR SwapChain::chooseSwapPresentMode(std::vector<vk::PresentModeKHR> const& availablePresentModes) {
-	return std::ranges::any_of(
-	           availablePresentModes,
-	           [](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; }
-	       )
-	           ? vk::PresentModeKHR::eMailbox
-	           : vk::PresentModeKHR::eFifo;
+	const bool supportsMailbox = std::ranges::any_of(
+		       availablePresentModes,
+		       [](const vk::PresentModeKHR value) { return vk::PresentModeKHR::eMailbox == value; }
+		   );
+	if (!supportsMailbox) {
+		LOG_INFO("SwapChain::chooseSwapPresentMode", "Mailbox present mode not available; using FIFO");
+	}
+	return supportsMailbox ? vk::PresentModeKHR::eMailbox : vk::PresentModeKHR::eFifo;
 }
 
 vk::Extent2D SwapChain::chooseSwapExtent(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities) {
@@ -59,12 +64,19 @@ void SwapChain::createSwapChain(const vk::raii::SurfaceKHR& surface) {
 	    .imageSharingMode = vk::SharingMode::eExclusive,
 	    .preTransform = surfaceCapabilities.currentTransform,
 	    .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-	    .presentMode = vk::PresentModeKHR::eFifo,
+	    .presentMode = presentMode,
 	    .clipped = true,
 	    .oldSwapchain = nullptr
 	};
 	swapChain = vk::raii::SwapchainKHR(context.getDevice(), swapChainCreateInfo);
 	swapChainImages = swapChain.getImages();
+	LOG_INFO(
+	    "SwapChain::createSwapChain",
+	    "Swapchain created: {}x{}, images {}",
+	    swapChainExtent.width,
+	    swapChainExtent.height,
+	    swapChainImages.size()
+	);
 }
 
 void SwapChain::recreateSwapChain() {
@@ -76,7 +88,7 @@ void SwapChain::recreateSwapChain() {
 	cleanupSwapChain();
 	createSwapChain(context.getSurface());
 	createImageViews();
-	std::cout << "recreateSwapChain" << std::endl;
+	LOG_INFO("SwapChain::recreateSwapChain", "Swapchain recreated");
 }
 void SwapChain::cleanupSwapChain() {
 	imageViews.clear();

@@ -1,9 +1,15 @@
 #ifndef GALACTIC_DEBUGSYSTEM_HPP
 #define GALACTIC_DEBUGSYSTEM_HPP
-#include "include/inc.hpp"
-#include <iostream>
-#include <string>
 #include <format>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+#ifdef NDEBUG
+constexpr bool enableValidationLayers = false;
+#else
+constexpr bool enableValidationLayers = true;
+#endif
 
 /**
  * @def LOG_INFO
@@ -66,8 +72,8 @@ do { if (enableValidationLayers) debugSystem::log(LogLevel::WARNING, tag, std::f
  * LOG_ERROR("Window", "Failed to create window surface: {}", std::string(SDL_GetError()));
  * @endcode
  */
-#define LOG_ERROR(tag, ...) \
-debugSystem::log(LogLevel::ERROR, tag, std::format(__VA_ARGS__))
+	#define LOG_ERROR(tag, ...) \
+	do { debugSystem::log(LogLevel::ERROR, tag, std::format(__VA_ARGS__)); } while(0)
 
 enum class LogLevel {
 	INFO,

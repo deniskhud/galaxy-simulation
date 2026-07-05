@@ -143,13 +143,14 @@ bool Pipeline::createPipeline() {
 
 		pipelineInfo.pNext = &renderingInfo;
 
-		pipeline = vk::raii::Pipeline(context.getDevice(), nullptr, pipelineInfo);
+			pipeline = vk::raii::Pipeline(context.getDevice(), nullptr, pipelineInfo);
 
-		return true;
-	} catch (const std::exception& e) {
-		std::cerr << "Failed to create graphics pipeline: " << e.what() << std::endl;
-		return false;
-	}
+			LOG_INFO("Pipeline::createPipeline", "Graphics pipeline created");
+			return true;
+		} catch (const std::exception& e) {
+			LOG_ERROR("Pipeline::createPipeline", "Failed to create graphics pipeline: {}", e.what());
+			return false;
+		}
 }
 
 bool Pipeline::createDescriptorSetLayout() {
@@ -190,20 +191,22 @@ bool Pipeline::createDescriptorSetLayout() {
 		// for compute
 		vk::DescriptorSetLayoutCreateInfo computeLayoutInfo{
 		    .bindingCount = static_cast<uint32_t>(computeBindings.size()), .pBindings = computeBindings.data()
-		};
-		computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), computeLayoutInfo);
-		return true;
-	} catch (std::exception& e) {
-		std::cerr << "Failed to create descriptor set layout: " << e.what() << std::endl;
-		return false;
-	}
+			};
+			computeDescriptorSetLayout = vk::raii::DescriptorSetLayout(context.getDevice(), computeLayoutInfo);
+			LOG_INFO("Pipeline::createDescriptorSetLayout", "Descriptor set layouts created");
+			return true;
+		} catch (std::exception& e) {
+			LOG_ERROR("Pipeline::createDescriptorSetLayout", "Failed to create descriptor set layout: {}", e.what());
+			return false;
+		}
 }
 
 std::vector<char> Pipeline::readShaderFile(const std::string& filename) {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open()) {
-		throw std::runtime_error("Could not open shader file: " + filename);
+		LOG_ERROR("Pipeline::readShaderFile", "Could not open shader file: {}", filename);
+		return {};
 	}
 
 	size_t fileSize = file.tellg();
@@ -213,6 +216,7 @@ std::vector<char> Pipeline::readShaderFile(const std::string& filename) {
 	file.read(resultBuffer.data(), static_cast<long>(fileSize));
 	file.close();
 
+	LOG_INFO("Pipeline::readShaderFile", "Loaded shader file {} ({} bytes)", filename, fileSize);
 	return resultBuffer;
 }
 
@@ -254,13 +258,14 @@ bool Pipeline::createComputePipeline() {
 		    .layout = *computePipelineLayout,
 		};
 
-		computePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
+			computePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
 
-		return true;
-	} catch (const std::exception& e) {
-		std::cerr << "Failed to create compute pipeline: " << e.what() << std::endl;
-		return false;
-	}
+			LOG_INFO("Pipeline::createComputePipeline", "Compute pipeline created");
+			return true;
+		} catch (const std::exception& e) {
+			LOG_ERROR("Pipeline::createComputePipeline", "Failed to create compute pipeline: {}", e.what());
+			return false;
+		}
 }
 
 bool Pipeline::createInitComputePipeline() {
@@ -292,13 +297,14 @@ bool Pipeline::createInitComputePipeline() {
 		    .layout = *initComputePipelineLayout,
 		};
 
-		initComputePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
+			initComputePipeline = vk::raii::Pipeline(context.getDevice(), nullptr, computePipelineInfo);
 
-		return true;
-	} catch (const std::exception& e) {
-		std::cerr << "Failed to create init pipeline: " << e.what() << std::endl;
-		return false;
-	}
+			LOG_INFO("Pipeline::createInitComputePipeline", "Init compute pipeline created");
+			return true;
+		} catch (const std::exception& e) {
+			LOG_ERROR("Pipeline::createInitComputePipeline", "Failed to create init pipeline: {}", e.what());
+			return false;
+		}
 }
 
 /*** getters ***/

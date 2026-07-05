@@ -1,80 +1,10 @@
 #include "camera.hpp"
 
-void InputState::processEvent(const SDL_Event& e) {
-
-	if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN &&
-		e.button.button == SDL_BUTTON_LEFT)
-	{
-		rotating = true;
-
-		lastX = e.button.x;
-		lastY = e.button.y;
-	}
-
-	if (e.type == SDL_EVENT_MOUSE_BUTTON_UP &&
-		e.button.button == SDL_BUTTON_LEFT)
-	{
-		rotating = false;
-	}
-
-	if (e.type == SDL_EVENT_MOUSE_MOTION &&
-		rotating)
-	{
-		mouseDX += e.motion.x - lastX;
-		mouseDY += e.motion.y - lastY;
-
-		lastX = e.motion.x;
-		lastY = e.motion.y;
-	}
-
-	if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-		wheel += e.wheel.y;
-	}
-}
-
-void InputState::update() {
-	mouseDX = 0;
-	mouseDY = 0;
-
-	wheel = 0;
-
-	const bool* keys =
-		SDL_GetKeyboardState(nullptr);
-
-	forward =
-		keys[SDL_SCANCODE_W];
-
-	backward =
-		keys[SDL_SCANCODE_S];
-
-	left =
-		keys[SDL_SCANCODE_A];
-
-	right =
-		keys[SDL_SCANCODE_D];
-
-	up =
-		keys[SDL_SCANCODE_SPACE];
-
-	down =
-		keys[SDL_SCANCODE_LSHIFT];
-}
-
-
-
-Camera::Camera(const VulkanContext& context, float aspectRatio) : aspectRatio(aspectRatio) {
-	cameraUboBuffer = std::make_unique<Buffer>(
-	    context,
-	    sizeof(CameraUbo),
-	    vk::BufferUsageFlagBits::eUniformBuffer,
-	    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-	);
-
-	uploadUbo();
+Camera::Camera(float aspectRatio) : aspectRatio(aspectRatio) {
 	updateVectors();
 }
 
-void Camera::updateCamera(float deltaTime, const InputState &input) {
+void Camera::update(float deltaTime, const InputState& input) {
 	float velocity = moveSpeed * deltaTime;
 
 	if (input.forward)
@@ -97,13 +27,6 @@ void Camera::updateCamera(float deltaTime, const InputState &input) {
 
 	rotate(input.mouseDX, input.mouseDY);
 	zoom(input.wheel);
-
-	uploadUbo();
-}
-
-void Camera::uploadUbo() {
-	auto uboData = getUbo();
-	cameraUboBuffer->upload(&uboData, sizeof(uboData));
 }
 
 CameraUbo Camera::getUbo() const {

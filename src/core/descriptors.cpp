@@ -31,6 +31,7 @@ DescriptorPool::DescriptorPool(const VulkanContext& context, const Pipeline& pip
 	     .pBufferInfo = &computeInfo},
 	}};
 	context.getDevice().updateDescriptorSets(writes, {});
+	LOG_INFO("DescriptorPool::DescriptorPool", "Descriptor sets initialized");
 }
 
 vk::raii::DescriptorSet DescriptorPool::allocateDescriptorSet(vk::DescriptorSetLayout descriptorSetLayout) {
@@ -54,6 +55,12 @@ void DescriptorPool::createDescriptorPool(uint32_t maxSets, uint32_t storageBuff
 	    .pPoolSizes = poolSizes.data(),
 	};
 	descriptorPool = vk::raii::DescriptorPool(context.getDevice(), poolInfo);
+	LOG_INFO(
+	    "DescriptorPool::createDescriptorPool",
+	    "Descriptor pool created: max sets {}, storage buffers {}",
+	    maxSets,
+	    storageBufferCount
+	);
 }
 
 void DescriptorPool::updateComputeSet(const BufferView& bufferView) {
@@ -66,6 +73,7 @@ void DescriptorPool::updateComputeSet(const BufferView& bufferView) {
 	    .pBufferInfo = &ssboInfo,
 	};
 	context.getDevice().updateDescriptorSets(write, {});
+	LOG_INFO("DescriptorPool::updateComputeSet", "Compute descriptor set updated: buffer size {}", bufferView.size);
 }
 
 void DescriptorPool::updateGraphicsSet(const BufferView& bufferView) {
@@ -78,4 +86,5 @@ void DescriptorPool::updateGraphicsSet(const BufferView& bufferView) {
 	    .pBufferInfo = &ssboInfo,
 	};
 	context.getDevice().updateDescriptorSets(write, {});
+	LOG_INFO("DescriptorPool::updateGraphicsSet", "Graphics descriptor set updated: buffer size {}", bufferView.size);
 }

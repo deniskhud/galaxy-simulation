@@ -4,11 +4,13 @@ Engine::Engine() = default;
 
 Engine::~Engine() {
 	if (vulkanContext) {
+		LOG_INFO("Engine::~Engine", "Waiting for device idle before shutdown");
 		vulkanContext->getDevice().waitIdle();
 	}
 }
 
 void Engine::initialize() {
+	LOG_INFO("Engine::initialize", "Initializing engine");
 	window = std::make_unique<Window>();
 	guiParams.frameRate = window->calculateFrameRate();
 
@@ -19,12 +21,19 @@ void Engine::initialize() {
 
 	particles = std::make_unique<ParticleSystem>(*vulkanContext, static_cast<std::uint32_t>(guiParams.galaxyParams.particleCount));
 	auto [w, h] = window->getFrameBufferSize();
-	camera = std::make_unique<Camera>(*vulkanContext, static_cast<float>(w) / static_cast<float>(h));
+	camera = std::make_unique<Camera>(static_cast<float>(w) / static_cast<float>(h));
+	cameraUboBuffer = std::make_unique<Buffer>(
+	    *vulkanContext,
+	    sizeof(CameraUbo),
+	    vk::BufferUsageFlagBits::eUniformBuffer,
+	    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+	);
+	uploadCameraUbo();
 
 	descriptorPool = std::make_unique<DescriptorPool>(
 	    *vulkanContext,
 	    *pipeline,
-	    camera->getCameraBuffer().getBufferView(),
+	    cameraUboBuffer->getBufferView(),
 	    particles->getSsboBuffer().getBufferView()
 	);
 
@@ -49,9 +58,11 @@ void Engine::initialize() {
 	);
 
 	renderer->setGalaxyParams(guiParams.galaxyParams);
+	LOG_INFO("Engine::initialize", "Engine initialized");
 }
 
 void Engine::run() {
+	LOG_INFO("Engine::run", "Entering main loop");
 	InputState input;
 	bool running = true;
 
@@ -62,13 +73,14 @@ void Engine::run() {
 		    static_cast<float>(current - previous) / static_cast<float>(SDL_GetPerformanceFrequency());
 		previous = current;
 
-		input.update();
+		window->updateInput(input);
 		running = processEvents(input);
 		update(deltaTime, input);
 		drawGui();
 		renderer->drawFrame();
 		handleResize();
 	}
+	LOG_INFO("Engine::run", "Leaving main loop");
 }
 
 bool Engine::processEvents(InputState& input) {
@@ -78,16 +90,9 @@ bool Engine::processEvents(InputState& input) {
 	while (SDL_PollEvent(&event)) {
 		imGuiSystem->processEvent(event);
 
-		if (event.type == SDL_EVENT_QUIT) {
+		if (!window->processEvent(event, input, !ImGui::GetIO().WantCaptureMouse)) {
+			LOG_INFO("Engine::processEvents", "Quit event received");
 			running = false;
-		}
-
-		if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-			window->framebufferResized = true;
-		}
-
-		if (!ImGui::GetIO().WantCaptureMouse) {
-			input.processEvent(event);
 		}
 	}
 
@@ -95,8 +100,14 @@ bool Engine::processEvents(InputState& input) {
 }
 
 void Engine::update(float deltaTime, const InputState& input) {
-	camera->updateCamera(deltaTime, input);
+	camera->update(deltaTime, input);
+	uploadCameraUbo();
 	guiParams.frameRate = window->calculateFrameRate();
+}
+
+void Engine::uploadCameraUbo() {
+	auto uboData = camera->getUbo();
+	cameraUboBuffer->upload(&uboData, sizeof(uboData));
 }
 
 void Engine::drawGui() {
@@ -110,10 +121,12 @@ void Engine::handleResize() {
 		return;
 	}
 
+	LOG_WARNING("Engine::handleResize", "Handling framebuffer resize");
 	vulkanContext->getDevice().waitIdle();
 	swapChain->recreateSwapChain();
 
 	auto [w, h] = window->getFrameBufferSize();
 	camera->setAspectRatio(static_cast<float>(w) / static_cast<float>(h));
+	uploadCameraUbo();
 	window->framebufferResized = false;
 }
